@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow Pro - Premium UI</title>
+    <title>TaskFlow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,11 +16,12 @@
         .island-spring { transition: all 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55); }
         .fade-in-out { transition: opacity 0.3s ease-in-out; }
         .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-down { animation: fadeInDown 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="text-slate-800 flex flex-col h-screen overflow-hidden selection:bg-indigo-100 selection:text-indigo-900">
 
-    <!-- Dynamic Island Notification -->
     <div id="dynamicIsland" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[999] bg-slate-900 text-white rounded-full flex items-center justify-center overflow-hidden island-spring w-0 h-0 opacity-0 shadow-2xl shadow-slate-900/20 pointer-events-none origin-center border border-slate-700/50">
         <div id="dynamicIslandContent" class="px-6 py-2.5 flex items-center space-x-3 w-max opacity-0 fade-in-out delay-100">
             <div id="di-icon" class="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-400 to-emerald-600 flex items-center justify-center shadow-inner shrink-0">
@@ -29,41 +31,12 @@
         </div>
     </div>
 
-    <!-- Login Screen -->
-    <div id="login-screen" class="fixed inset-0 bg-[#fafafa] z-[100] flex items-center justify-center p-4">
-        <div class="bg-white p-10 rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-slate-100/60 w-full max-w-md relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-            <div class="flex flex-col items-center justify-center mb-10 mt-4">
-                <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-200 mb-5">
-                    <i data-lucide="layers" class="w-8 h-8 text-white"></i>
-                </div>
-                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">TaskFlow</h1>
-                <p class="text-sm text-slate-500 mt-2 font-medium">Ruang Kerja Profesional</p>
-            </div>
-            
-            <form id="loginForm" class="space-y-5" onsubmit="app.handleLogin(event)">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">ID Pengguna</label>
-                    <input type="text" id="kodeAkses" required class="w-full px-4 py-3.5 rounded-2xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="Masukkan ID">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Kata Sandi</label>
-                    <input type="password" id="password" required class="w-full px-4 py-3.5 rounded-2xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="••••••••">
-                </div>
-                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all active:scale-[0.98] mt-6 shadow-md shadow-slate-200">Masuk Aplikasi</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Main App -->
-    <div id="main-app" class="flex flex-col w-full h-full hidden">
+    <div id="main-app" class="flex flex-col w-full h-full">
         
-        <!-- Top Header Navigation -->
         <header class="glass-header border-b border-slate-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.02)] z-40 shrink-0 sticky top-0">
             <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16 sm:h-20 relative">
                     
-                    <!-- Logo Kiri -->
                     <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="app.setView('list')">
                         <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-sm">
                             <i data-lucide="layers" class="w-4.5 h-4.5 text-white"></i>
@@ -71,7 +44,6 @@
                         <span class="text-xl font-extrabold text-slate-900 tracking-tight hidden sm:block">TaskFlow</span>
                     </div>
                     
-                    <!-- Navigasi Tengah -->
                     <nav class="hidden md:flex items-center space-x-1 absolute left-1/2 transform -translate-x-1/2">
                         <button onclick="app.setView('list')" data-nav="list" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
                             <i data-lucide="list" class="w-4 h-4"></i><span>Daftar</span>
@@ -87,14 +59,20 @@
                         </button>
                     </nav>
 
-                    <!-- User & Logout Kanan -->
                     <div class="flex items-center space-x-4 shrink-0">
                         <div class="hidden xl:flex items-center bg-slate-100/80 border border-slate-200/60 rounded-full px-4 py-2 w-64 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all">
                             <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                            <input type="text" id="searchInput" placeholder="Cari tugas..." class="bg-transparent border-none outline-none ml-2 text-sm w-full text-slate-700 font-medium placeholder:font-normal">
+                            <input type="text" id="searchInput" placeholder="Cari tugas, divisi, atau HUB..." class="bg-transparent border-none outline-none ml-2 text-sm w-full text-slate-700 font-medium placeholder:font-normal">
                         </div>
                         
-                        <div class="flex items-center space-x-4 lg:border-l lg:border-slate-200 lg:pl-5">
+                        <div id="auth-section-guest" class="flex items-center lg:border-l lg:border-slate-200 lg:pl-5">
+                            <button onclick="app.openLoginModal()" class="flex items-center justify-center space-x-2 bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-slate-200 outline-none">
+                                <i data-lucide="log-in" class="w-4 h-4"></i>
+                                <span>Masuk</span>
+                            </button>
+                        </div>
+
+                        <div id="auth-section-user" class="hidden items-center space-x-4 lg:border-l lg:border-slate-200 lg:pl-5">
                             <div class="flex flex-col items-end hidden sm:flex">
                                 <span id="userNameDisplay" class="text-sm font-bold text-slate-800"></span>
                                 <span id="userEmailDisplay" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"></span>
@@ -112,12 +90,11 @@
                 </div>
             </div>
 
-            <!-- Mobile Menu -->
             <div id="mobileMenu" class="md:hidden hidden border-t border-slate-100 bg-white/95 backdrop-blur-xl absolute w-full z-50 shadow-2xl pb-6 rounded-b-[2rem]">
                 <div class="px-6 pt-6 pb-2 space-y-2">
                     <div class="flex items-center bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 mb-6">
                         <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="searchInputMobile" placeholder="Cari tugas..." class="bg-transparent border-none outline-none ml-3 text-sm w-full text-slate-700 font-medium">
+                        <input type="text" id="searchInputMobile" placeholder="Cari tugas, divisi, atau HUB..." class="bg-transparent border-none outline-none ml-3 text-sm w-full text-slate-700 font-medium">
                     </div>
                     <button onclick="app.setView('list'); app.toggleMobileMenu()" data-nav="list" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
                         <i data-lucide="list" class="w-5 h-5"></i><span>Daftar Tugas</span>
@@ -131,11 +108,21 @@
                     <button onclick="app.setView('settings'); app.toggleMobileMenu()" data-nav="settings" id="nav-settings-mobile" class="hidden w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
                         <i data-lucide="settings" class="w-5 h-5"></i><span>Pengaturan Sistem</span>
                     </button>
+                    <div class="h-px w-full bg-slate-100 my-4"></div>
+                    <div id="mobile-auth-guest">
+                        <button onclick="app.openLoginModal(); app.toggleMobileMenu()" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
+                            <i data-lucide="log-in" class="w-5 h-5"></i><span>Masuk Akun</span>
+                        </button>
+                    </div>
+                    <div id="mobile-auth-user" class="hidden">
+                        <button onclick="app.handleLogout(); app.toggleMobileMenu()" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold text-red-600 hover:bg-red-50 transition-all">
+                            <i data-lucide="log-out" class="w-5 h-5"></i><span>Keluar Akun</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content Workspace -->
         <main class="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center">
             <div class="w-full max-w-[1600px] flex-1 flex flex-col">
                 
@@ -148,7 +135,7 @@
                             <input type="checkbox" id="toggleHideDone" onchange="app.toggleHideDone(this.checked)" class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4">
                             <span class="font-bold">Sembunyikan Selesai</span>
                         </label>
-                        <button onclick="app.openModal()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md shadow-slate-200 flex items-center active:scale-95">
+                        <button id="btn-add-task" onclick="app.openModal()" class="hidden bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md shadow-slate-200 flex items-center active:scale-95">
                             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Buat Tugas
                         </button>
                     </div>
@@ -159,6 +146,36 @@
                 <div id="view-container" class="flex-1 min-h-0 w-full relative"></div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Login -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden items-center justify-center p-4 transition-opacity">
+        <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100/60 w-full max-w-md relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-extrabold text-slate-900">Masuk Akun</h2>
+                <button onclick="app.closeLoginModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2 rounded-full transition-colors outline-none">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="flex p-1 bg-slate-100 rounded-xl mb-6">
+                <button id="tabStaf" onclick="app.setLoginType('staf')" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white text-slate-900 shadow-sm transition-all">Staf</button>
+                <button id="tabAdmin" onclick="app.setLoginType('admin')" class="flex-1 py-2 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all">Admin</button>
+            </div>
+
+            <form id="authForm" class="space-y-5" onsubmit="app.submitLogin(event)">
+                <div id="idFieldContainer">
+                    <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">ID Pengguna</label>
+                    <input type="text" id="loginId" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="Masukkan ID Anda">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Kata Sandi</label>
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-3.5 rounded-2xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md mt-2">Masuk Ruang Kerja</button>
+            </form>
+        </div>
     </div>
 
     <!-- Modal Form Task -->
@@ -187,26 +204,22 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Divisi</label>
-                            <select id="taskDivision" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer"></select>
+                            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">Divisi (Bisa pilih lebih dari satu)</label>
+                            <div id="divisionPills" class="flex flex-wrap gap-2.5"></div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Kategori</label>
-                            <select id="taskCategory" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer"></select>
+                            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">Kode HUB</label>
+                            <div id="kodeHubPills" class="flex flex-wrap gap-2.5"></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Prioritas</label>
-                            <select id="taskPriority" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer">
-                                <option value="rendah">Rendah</option>
-                                <option value="sedang" selected>Sedang</option>
-                                <option value="tinggi">Tinggi</option>
-                            </select>
+                            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">Prioritas</label>
+                            <div id="priorityPills" class="flex flex-wrap gap-2.5"></div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Tenggat</label>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Due Date</label>
                             <input type="date" id="taskDueDate" required class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none">
                         </div>
                     </div>
@@ -268,14 +281,21 @@
             state: {
                 user: null,
                 userName: '',
-                role: 'user',
+                role: 'guest',
+                loginType: 'staf',
                 view: 'list',
                 searchQuery: '',
                 hideDone: false,
+                expandedTaskId: null,
                 tasks: [],
                 divisions: [],
                 categories: [],
                 profiles: []
+            },
+            formState: {
+                divisions: [],
+                category: '',
+                priority: 'sedang'
             },
             dialogResolve: null,
 
@@ -283,16 +303,17 @@
                 this.cacheDOM();
                 this.bindEvents();
                 await this.checkAuth();
+                await this.fetchData();
             },
 
             cacheDOM() {
-                this.loginScreen = document.getElementById('login-screen');
                 this.mainApp = document.getElementById('main-app');
                 this.viewContainer = document.getElementById('view-container');
                 this.kpiContainer = document.getElementById('kpi-container');
                 this.searchInput = document.getElementById('searchInput');
                 this.searchInputMobile = document.getElementById('searchInputMobile');
                 this.modal = document.getElementById('taskModal');
+                this.loginModal = document.getElementById('loginModal');
                 this.pageTitle = document.getElementById('page-title');
                 this.actionButtons = document.getElementById('action-buttons');
                 this.mobileMenu = document.getElementById('mobileMenu');
@@ -300,9 +321,6 @@
                 this.fId = document.getElementById('taskId');
                 this.fTitle = document.getElementById('taskTitle');
                 this.fDesc = document.getElementById('taskDesc');
-                this.fDiv = document.getElementById('taskDivision');
-                this.fCat = document.getElementById('taskCategory');
-                this.fPriority = document.getElementById('taskPriority');
                 this.fDue = document.getElementById('taskDueDate');
                 this.fStatus = document.getElementById('taskStatus');
                 this.fUpdateLog = document.getElementById('taskUpdateLog');
@@ -436,11 +454,43 @@
                     await this.loadUserProfile(kodeIdentitas);
                     document.getElementById('userEmailDisplay').innerText = `ID: ${kodeIdentitas}`;
                     document.getElementById('userNameDisplay').innerText = this.state.userName;
-                    
-                    this.showApp();
-                    await this.fetchData();
+                    this.updateHeaderAuthUI(true);
                 } else {
-                    this.showLogin();
+                    this.state.user = null;
+                    this.state.role = 'guest';
+                    this.updateHeaderAuthUI(false);
+                }
+            },
+
+            updateHeaderAuthUI(isLoggedIn) {
+                const guestSection = document.getElementById('auth-section-guest');
+                const userSection = document.getElementById('auth-section-user');
+                const mobileGuest = document.getElementById('mobile-auth-guest');
+                const mobileUser = document.getElementById('mobile-auth-user');
+                const btnAdd = document.getElementById('btn-add-task');
+
+                if (isLoggedIn) {
+                    guestSection.classList.add('hidden');
+                    userSection.classList.remove('hidden');
+                    mobileGuest.classList.add('hidden');
+                    mobileUser.classList.remove('hidden');
+                    if(btnAdd) btnAdd.classList.remove('hidden');
+                    if (this.state.role === 'admin') {
+                        document.getElementById('nav-settings-desktop').classList.remove('hidden');
+                        document.getElementById('nav-settings-mobile').classList.remove('hidden');
+                    }
+                } else {
+                    guestSection.classList.remove('hidden');
+                    userSection.classList.add('hidden');
+                    mobileGuest.classList.remove('hidden');
+                    mobileUser.classList.add('hidden');
+                    if(btnAdd) btnAdd.classList.add('hidden');
+                    document.getElementById('nav-settings-desktop').classList.add('hidden');
+                    document.getElementById('nav-settings-mobile').classList.add('hidden');
+                    
+                    if (this.state.view === 'settings') {
+                        this.setView('list');
+                    }
                 }
             },
 
@@ -457,17 +507,54 @@
                     this.state.role = assignedRole;
                     this.state.userName = defaultName;
                 }
-                
-                if (this.state.role === 'admin') {
-                    document.getElementById('nav-settings-desktop').classList.remove('hidden');
-                    document.getElementById('nav-settings-mobile').classList.remove('hidden');
+            },
+
+            openLoginModal() {
+                this.setLoginType('staf');
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginModal').classList.remove('hidden');
+                document.getElementById('loginModal').classList.add('flex');
+            },
+
+            closeLoginModal() {
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('loginModal').classList.remove('flex');
+            },
+
+            setLoginType(type) {
+                this.state.loginType = type;
+                const tabStaf = document.getElementById('tabStaf');
+                const tabAdmin = document.getElementById('tabAdmin');
+                const idContainer = document.getElementById('idFieldContainer');
+                const loginId = document.getElementById('loginId');
+
+                if (type === 'admin') {
+                    tabAdmin.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white text-slate-900 shadow-sm transition-all";
+                    tabStaf.className = "flex-1 py-2 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all";
+                    idContainer.classList.add('hidden');
+                    loginId.value = 'admin';
+                } else {
+                    tabStaf.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white text-slate-900 shadow-sm transition-all";
+                    tabAdmin.className = "flex-1 py-2 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all";
+                    idContainer.classList.remove('hidden');
+                    loginId.value = '';
                 }
             },
 
-            async handleLogin(e) {
+            async submitLogin(e) {
                 e.preventDefault();
-                const kodeAkses = document.getElementById('kodeAkses').value.trim().toLowerCase();
-                const password = document.getElementById('password').value;
+                let kodeAkses = document.getElementById('loginId').value.trim().toLowerCase();
+                const password = document.getElementById('loginPassword').value;
+                
+                if (this.state.loginType === 'admin') {
+                    kodeAkses = 'admin';
+                }
+
+                if (!kodeAkses) {
+                    this.showNotification('Harap isi ID Pengguna', 'error');
+                    return;
+                }
+
                 const email = `${kodeAkses}@taskflow.local`;
                 
                 let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -481,7 +568,7 @@
                         }
                         data = signUpData;
                     } else {
-                        this.showNotification('ID Akses atau Password salah.', 'error');
+                        this.showNotification('ID Akses atau Kata Sandi salah.', 'error');
                         return;
                     }
                 } else if (error) {
@@ -490,29 +577,20 @@
                 }
 
                 if (data && data.session) {
+                    this.closeLoginModal();
                     this.showNotification('Otentikasi berhasil', 'success');
                     await this.checkAuth();
+                    this.render();
                 }
             },
 
             async handleLogout() {
                 await supabaseClient.auth.signOut();
                 this.state.user = null;
-                document.getElementById('nav-settings-desktop').classList.add('hidden');
-                document.getElementById('nav-settings-mobile').classList.add('hidden');
-                document.getElementById('kodeAkses').value = '';
-                document.getElementById('password').value = '';
-                this.showLogin();
-            },
-
-            showLogin() {
-                this.loginScreen.classList.remove('hidden');
-                this.mainApp.classList.add('hidden');
-            },
-
-            showApp() {
-                this.loginScreen.classList.add('hidden');
-                this.mainApp.classList.remove('hidden');
+                this.state.role = 'guest';
+                this.updateHeaderAuthUI(false);
+                this.showNotification('Berhasil keluar', 'success');
+                this.render();
             },
 
             async fetchData() {
@@ -532,18 +610,70 @@
                 this.state.tasks = tasks.map(t => ({
                     ...t,
                     updates: updates.filter(u => u.task_id === t.id).map(u => ({
+                        id: u.id,
                         date: new Date(u.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour:'2-digit', minute:'2-digit'}),
-                        text: u.text
+                        text: u.text,
+                        userName: u.user_name || 'Pengguna'
                     }))
                 }));
 
-                this.populateDropdowns();
                 this.render();
             },
 
-            populateDropdowns() {
-                this.fDiv.innerHTML = this.state.divisions.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
-                this.fCat.innerHTML = this.state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            renderFormPills() {
+                const divContainer = document.getElementById('divisionPills');
+                if(divContainer) {
+                    divContainer.innerHTML = this.state.divisions.map(d => {
+                        const active = this.formState.divisions.includes(d.name);
+                        const baseCls = "px-4 py-2.5 rounded-xl text-sm font-bold transition-all outline-none border cursor-pointer select-none";
+                        const activeCls = active ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200 scale-[0.98]" : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-800";
+                        return `<button type="button" onclick="app.toggleFormDivision('${d.name}')" class="${baseCls} ${activeCls}">${d.name}</button>`;
+                    }).join('');
+                }
+
+                const catContainer = document.getElementById('kodeHubPills');
+                if(catContainer) {
+                    catContainer.innerHTML = this.state.categories.map(c => {
+                        const active = this.formState.category === c.name;
+                        const baseCls = "px-4 py-2.5 rounded-xl text-sm font-bold transition-all outline-none border cursor-pointer select-none";
+                        const activeCls = active ? "bg-slate-900 text-white border-slate-900 shadow-md shadow-slate-200 scale-[0.98]" : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-800";
+                        return `<button type="button" onclick="app.setFormCategory('${c.name}')" class="${baseCls} ${activeCls}">${c.name}</button>`;
+                    }).join('');
+                }
+
+                const prioContainer = document.getElementById('priorityPills');
+                if(prioContainer) {
+                    const priorities = [
+                        { id: 'rendah', label: 'Rendah', activeColor: 'bg-sky-500 border-sky-500 text-white shadow-md shadow-sky-200 scale-[0.98]' },
+                        { id: 'sedang', label: 'Sedang', activeColor: 'bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-200 scale-[0.98]' },
+                        { id: 'tinggi', label: 'Tinggi', activeColor: 'bg-rose-500 border-rose-500 text-white shadow-md shadow-rose-200 scale-[0.98]' }
+                    ];
+                    prioContainer.innerHTML = priorities.map(p => {
+                        const active = this.formState.priority === p.id;
+                        const baseCls = "px-4 py-2.5 rounded-xl text-sm font-bold transition-all outline-none border cursor-pointer select-none";
+                        const inactiveCls = "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-800";
+                        return `<button type="button" onclick="app.setFormPriority('${p.id}')" class="${baseCls} ${active ? p.activeColor : inactiveCls}">${p.label}</button>`;
+                    }).join('');
+                }
+            },
+
+            toggleFormDivision(name) {
+                if (this.formState.divisions.includes(name)) {
+                    this.formState.divisions = this.formState.divisions.filter(d => d !== name);
+                } else {
+                    this.formState.divisions.push(name);
+                }
+                this.renderFormPills();
+            },
+
+            setFormCategory(name) {
+                this.formState.category = name;
+                this.renderFormPills();
+            },
+
+            setFormPriority(level) {
+                this.formState.priority = level;
+                this.renderFormPills();
             },
 
             setView(viewName) {
@@ -561,12 +691,12 @@
 
                 if (viewName === 'settings') {
                     this.pageTitle.innerText = "Pengaturan Sistem";
-                    this.actionButtons.classList.add('hidden');
                     this.kpiContainer.classList.add('hidden');
+                    if(document.getElementById('action-buttons')) document.getElementById('action-buttons').classList.add('hidden');
                 } else {
                     this.pageTitle.innerText = "Tugas Berjalan";
-                    this.actionButtons.classList.remove('hidden');
                     this.kpiContainer.classList.remove('hidden');
+                    if(document.getElementById('action-buttons')) document.getElementById('action-buttons').classList.remove('hidden');
                 }
                 
                 this.render();
@@ -577,11 +707,24 @@
                 this.render();
             },
 
+            toggleTaskExpand(id, event) {
+                if (event) event.stopPropagation();
+                if (this.state.expandedTaskId === id) {
+                    this.state.expandedTaskId = null;
+                } else {
+                    this.state.expandedTaskId = id;
+                }
+                this.renderList(this.getFilteredTasks());
+                lucide.createIcons();
+            },
+
             getFilteredTasks() {
                 return this.state.tasks.filter(t => {
-                    const matchSearch = (t.title || '').toLowerCase().includes(this.state.searchQuery) ||
-                                        (t.description || '').toLowerCase().includes(this.state.searchQuery) ||
-                                        (t.division || '').toLowerCase().includes(this.state.searchQuery);
+                    const q = this.state.searchQuery;
+                    const matchSearch = (t.title || '').toLowerCase().includes(q) ||
+                                        (t.description || '').toLowerCase().includes(q) ||
+                                        (t.division || '').toLowerCase().includes(q) ||
+                                        (t.category || '').toLowerCase().includes(q);
                     const matchVisibility = this.state.hideDone ? t.status !== 'selesai' : true;
                     return matchSearch && matchVisibility;
                 });
@@ -593,6 +736,7 @@
             },
 
             async updateStatus(id, newStatus) {
+                if (this.state.role === 'guest') return;
                 const now = new Date().toISOString();
                 const updateData = { status: newStatus, updated_at: now };
                 if (newStatus === 'selesai') updateData.completed_at = now;
@@ -604,6 +748,7 @@
             },
 
             async deleteTask(id) {
+                if (this.state.role === 'guest') return;
                 if(await this.showConfirm('Data yang dihapus tidak dapat dikembalikan. Lanjutkan?')) {
                     await supabaseClient.from('tasks').delete().eq('id', id);
                     this.showNotification('Tugas dihapus permanen');
@@ -612,6 +757,7 @@
             },
 
             openModal(id = null) {
+                if (this.state.role === 'guest') return;
                 document.getElementById('modalTitle').innerText = id ? 'Edit Data Tugas' : 'Buat Tugas Baru';
                 
                 if(id) {
@@ -619,34 +765,57 @@
                     this.fId.value = task.id;
                     this.fTitle.value = task.title;
                     this.fDesc.value = task.description || '';
-                    this.fDiv.value = task.division;
-                    this.fCat.value = task.category;
-                    this.fPriority.value = task.priority;
+                    
+                    this.formState.divisions = task.division ? task.division.split(', ') : [];
+                    this.formState.category = task.category;
+                    this.formState.priority = task.priority;
+                    
                     this.fDue.value = task.due_date;
                     this.fStatus.value = task.status;
                     this.fUpdateLog.value = '';
                     
-                    this.editFields.classList.remove('hidden');
-                    
+                    this.editFields?.classList.remove('hidden');
+
                     if(task.updates && task.updates.length > 0) {
-                        this.historyContainer.classList.remove('hidden');
-                        this.historyList.innerHTML = task.updates.slice().reverse().map(u => `
-                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                                <div class="text-[10px] text-indigo-500 font-extrabold mb-1.5 uppercase tracking-widest">${u.date}</div>
-                                <div class="text-sm text-slate-700 font-semibold leading-relaxed">${u.text}</div>
-                            </div>
-                        `).join('');
+                        this.historyContainer?.classList.remove('hidden');
+                        if (this.historyList) {
+                            this.historyList.innerHTML = task.updates.slice().reverse().map(u => {
+                                const actionBtns = this.state.role === 'admin' ? `
+                                    <div class="flex space-x-3 mt-3 pt-3 border-t border-slate-100">
+                                        <button type="button" onclick="app.editUpdateLog(${u.id}, '${u.text.replace(/'/g, "\\'")}', ${task.id})" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-widest flex items-center outline-none"><i data-lucide="edit-2" class="w-3 h-3 mr-1"></i>Edit</button>
+                                        <button type="button" onclick="app.deleteUpdateLog(${u.id}, ${task.id})" class="text-[10px] font-bold text-red-600 hover:text-red-800 uppercase tracking-widest flex items-center outline-none"><i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>Hapus</button>
+                                    </div>
+                                ` : '';
+
+                                return `
+                                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <span class="text-[10px] text-indigo-500 font-extrabold uppercase tracking-widest">${u.date}</span>
+                                        <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-bold">${u.userName}</span>
+                                    </div>
+                                    <div class="text-sm text-slate-700 font-semibold leading-relaxed">${u.text}</div>
+                                    ${actionBtns}
+                                </div>
+                                `;
+                            }).join('');
+                        }
                     } else {
-                        this.historyContainer.classList.add('hidden');
+                        this.historyContainer?.classList.add('hidden');
                     }
                 } else {
                     document.getElementById('taskForm').reset();
                     this.fId.value = '';
                     this.fDue.value = new Date().toISOString().split('T')[0];
-                    this.editFields.classList.add('hidden');
-                    this.historyContainer.classList.add('hidden');
+                    
+                    this.formState.divisions = [];
+                    this.formState.category = this.state.categories.length > 0 ? this.state.categories[0].name : '';
+                    this.formState.priority = 'sedang';
+
+                    this.editFields?.classList.add('hidden');
+                    this.historyContainer?.classList.add('hidden');
                 }
                 
+                this.renderFormPills();
                 this.modal.classList.remove('hidden');
                 this.modal.classList.add('flex');
                 lucide.createIcons();
@@ -658,8 +827,9 @@
             },
 
             async saveTask() {
+                if (this.state.role === 'guest') return;
                 if(!this.fTitle.value.trim() || !this.fDue.value) {
-                    this.showNotification('Mohon lengkapi judul dan tenggat waktu', 'error');
+                    this.showNotification('Mohon lengkapi judul dan Due Date', 'error');
                     return;
                 }
                 const isEditing = !!this.fId.value;
@@ -668,9 +838,9 @@
                 const taskData = {
                     title: this.fTitle.value,
                     description: this.fDesc.value,
-                    division: this.fDiv.value,
-                    category: this.fCat.value,
-                    priority: this.fPriority.value,
+                    division: this.formState.divisions.join(', ') || 'Tanpa Divisi',
+                    category: this.formState.category || 'Tanpa Kode HUB',
+                    priority: this.formState.priority,
                     due_date: this.fDue.value,
                     status: isEditing ? this.fStatus.value : 'mulai',
                     updated_at: now
@@ -684,7 +854,10 @@
                     
                     if(this.fUpdateLog.value.trim()) {
                         await supabaseClient.from('task_updates').insert([{ 
-                            task_id: this.fId.value, text: this.fUpdateLog.value.trim(), created_at: now 
+                            task_id: this.fId.value, 
+                            text: this.fUpdateLog.value.trim(), 
+                            created_at: now,
+                            user_name: this.state.userName
                         }]);
                     }
                     this.showNotification('Perubahan disimpan');
@@ -699,30 +872,51 @@
                 await this.fetchData();
             },
 
+            async editUpdateLog(updateId, oldText, taskId) {
+                const newText = await this.showPrompt('Edit catatan progres', oldText);
+                if (newText && newText.trim() !== '' && newText !== oldText) {
+                    await supabaseClient.from('task_updates').update({ text: newText.trim() }).eq('id', updateId);
+                    this.showNotification('Catatan progres diperbarui');
+                    await this.fetchData();
+                    this.openModal(taskId);
+                }
+            },
+
+            async deleteUpdateLog(updateId, taskId) {
+                if(await this.showConfirm('Hapus catatan progres ini')) {
+                    await supabaseClient.from('task_updates').delete().eq('id', updateId);
+                    this.showNotification('Catatan progres dihapus');
+                    await this.fetchData();
+                    this.openModal(taskId);
+                }
+            },
+
             render() {
                 const tasks = this.getFilteredTasks();
                 const mulai = this.state.tasks.filter(t => t.status === 'mulai').length;
                 const proses = this.state.tasks.filter(t => t.status === 'proses').length;
                 const waiting = this.state.tasks.filter(t => t.status === 'waiting').length;
                 
-                this.kpiContainer.innerHTML = `
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0"><i data-lucide="layers" class="w-6 h-6"></i></div>
-                        <div><p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Total Tugas</p><p class="text-2xl font-extrabold text-slate-800 leading-none">${this.state.tasks.length}</p></div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0"><i data-lucide="inbox" class="w-6 h-6"></i></div>
-                        <div><p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Antrean</p><p class="text-2xl font-extrabold text-slate-800 leading-none">${mulai}</p></div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0"><i data-lucide="loader" class="w-6 h-6"></i></div>
-                        <div><p class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mb-1">Diproses</p><p class="text-2xl font-extrabold text-indigo-600 leading-none">${proses}</p></div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0"><i data-lucide="clock" class="w-6 h-6"></i></div>
-                        <div><p class="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest mb-1">Tertunda</p><p class="text-2xl font-extrabold text-amber-600 leading-none">${waiting}</p></div>
-                    </div>
-                `;
+                if (this.kpiContainer) {
+                    this.kpiContainer.innerHTML = `
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0"><i data-lucide="layers" class="w-6 h-6"></i></div>
+                            <div><p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Total Tugas</p><p class="text-2xl font-extrabold text-slate-800 leading-none">${this.state.tasks.length}</p></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0"><i data-lucide="inbox" class="w-6 h-6"></i></div>
+                            <div><p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Antrean</p><p class="text-2xl font-extrabold text-slate-800 leading-none">${mulai}</p></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0"><i data-lucide="loader" class="w-6 h-6"></i></div>
+                            <div><p class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mb-1">Diproses</p><p class="text-2xl font-extrabold text-indigo-600 leading-none">${proses}</p></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0"><i data-lucide="clock" class="w-6 h-6"></i></div>
+                            <div><p class="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest mb-1">Tertunda</p><p class="text-2xl font-extrabold text-amber-600 leading-none">${waiting}</p></div>
+                        </div>
+                    `;
+                }
 
                 if(this.state.view === 'list') this.renderList(tasks);
                 else if(this.state.view === 'board') this.renderBoard(tasks);
@@ -740,29 +934,82 @@
                 let html = `<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden"><div class="divide-y divide-slate-100">`;
                 tasks.forEach(task => {
                     const isDone = task.status === 'selesai';
+                    const isExpanded = this.state.expandedTaskId === task.id;
+                    const expandIcon = isExpanded ? 'chevron-up' : 'chevron-down';
+                    
+                    const statusBtn = this.state.role !== 'guest' 
+                        ? `<button onclick="app.updateStatus(${task.id}, '${isDone ? 'mulai' : 'selesai'}')" class="mt-0.5 shrink-0 outline-none"><i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-6 h-6 ${isDone ? 'text-emerald-500 fill-emerald-50' : 'text-slate-300 hover:text-indigo-500 transition-colors'}"></i></button>`
+                        : `<div class="mt-0.5 shrink-0"><i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-6 h-6 ${isDone ? 'text-emerald-500 fill-emerald-50' : 'text-slate-300'}"></i></div>`;
+                    
+                    const actionBtns = this.state.role !== 'guest'
+                        ? `<div class="flex space-x-1 shrink-0 border-l border-slate-100 pl-4">
+                                <button onclick="app.openModal(${task.id})" class="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors outline-none" title="Edit Tugas"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                <button onclick="app.deleteTask(${task.id})" class="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors outline-none" title="Hapus Tugas"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                           </div>`
+                        : '';
+                    
+                    const pointerClass = 'cursor-pointer hover:opacity-80 transition-opacity';
+
                     html += `
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-white hover:bg-slate-50 transition-colors gap-5">
-                        <div class="flex items-start space-x-5 flex-1">
-                            <button onclick="app.updateStatus(${task.id}, '${isDone ? 'mulai' : 'selesai'}')" class="mt-0.5 shrink-0 outline-none">
-                                <i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-6 h-6 ${isDone ? 'text-emerald-500 fill-emerald-50' : 'text-slate-300 hover:text-indigo-500 transition-colors'}"></i>
-                            </button>
-                            <div class="min-w-0 flex-1 cursor-pointer" onclick="app.openModal(${task.id})">
-                                <h4 class="font-extrabold text-base mb-1.5 truncate ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</h4>
-                                <div class="flex flex-wrap items-center gap-2.5 text-xs font-bold text-slate-500">
-                                    <span class="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-600">${task.division}</span>
-                                    <span class="text-slate-300">•</span>
-                                    <span>${task.category}</span>
+                    <div class="flex flex-col p-6 bg-white hover:bg-slate-50 transition-colors">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                            <div class="flex items-start space-x-5 flex-1">
+                                ${statusBtn}
+                                <div class="min-w-0 flex-1 ${pointerClass}" onclick="app.toggleTaskExpand(${task.id}, event)">
+                                    <h4 class="font-extrabold text-base mb-1.5 truncate ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</h4>
+                                    <div class="flex flex-wrap items-center gap-2.5 text-xs font-bold text-slate-500">
+                                        <span class="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-600">${task.division}</span>
+                                        <span class="text-slate-300">•</span>
+                                        <span>${task.category}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex items-center justify-between sm:justify-end space-x-6 w-full sm:w-auto pl-11 sm:pl-0">
-                            <span class="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
-                            <span class="text-xs font-bold text-slate-400 w-24 text-right"><i data-lucide="calendar" class="w-3.5 h-3.5 inline mr-1.5 mb-0.5"></i>${task.due_date}</span>
-                            <div class="flex space-x-1 shrink-0 border-l border-slate-100 pl-4">
-                                <button onclick="app.deleteTask(${task.id})" class="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors outline-none"><i data-lucide="trash-2" class="w-4.5 h-4.5"></i></button>
+                            <div class="flex items-center justify-between sm:justify-end space-x-5 w-full sm:w-auto pl-11 sm:pl-0">
+                                <span class="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)} hidden md:inline-block">${task.priority}</span>
+                                <span class="text-xs font-bold text-slate-400 w-24 text-right hidden sm:inline-block"><i data-lucide="calendar" class="w-3.5 h-3.5 inline mr-1.5 mb-0.5"></i>${task.due_date}</span>
+                                <button onclick="app.toggleTaskExpand(${task.id}, event)" class="flex items-center text-[11px] font-extrabold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition-colors outline-none uppercase tracking-wider">
+                                    Detail <i data-lucide="${expandIcon}" class="w-4 h-4 ml-1.5"></i>
+                                </button>
+                                ${actionBtns}
                             </div>
-                        </div>
-                    </div>`;
+                        </div>`;
+
+                    if (isExpanded) {
+                        html += `
+                        <div class="mt-5 pl-11 pr-2 animate-fade-in-down">
+                            <div class="p-6 bg-slate-50/80 rounded-2xl border border-slate-200/60">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="md:col-span-2">
+                                        <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i data-lucide="align-left" class="w-3.5 h-3.5 mr-2"></i>Detail Pekerjaan</h5>
+                                        <p class="text-sm text-slate-700 font-medium whitespace-pre-wrap leading-relaxed">${task.description || '<span class="italic text-slate-400">Tidak ada deskripsi.</span>'}</p>
+                                        
+                                        <div class="flex flex-wrap gap-3 mt-6 sm:hidden">
+                                            <span class="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
+                                            <span class="text-xs font-bold text-slate-400"><i data-lucide="calendar" class="w-3.5 h-3.5 inline mr-1.5 mb-0.5"></i>Due: ${task.due_date}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="border-t border-slate-200/60 pt-5 md:border-t-0 md:pt-0 md:border-l md:pl-6">
+                                        <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="history" class="w-3.5 h-3.5 mr-2"></i>Riwayat Progres</h5>
+                                        ${task.updates && task.updates.length > 0 ? `
+                                            <div class="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                                                ${task.updates.map(u => `
+                                                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                                                        <div class="flex justify-between items-center mb-1.5">
+                                                            <span class="text-[9px] text-indigo-500 font-extrabold uppercase tracking-widest">${u.date}</span>
+                                                            <span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-bold">${u.userName}</span>
+                                                        </div>
+                                                        <div class="text-xs text-slate-700 font-bold leading-relaxed">${u.text}</div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        ` : `<p class="text-xs text-slate-400 font-medium italic">Belum ada pembaruan progres.</p>`}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+                    html += `</div>`;
                 });
                 html += `</div></div>`;
                 this.viewContainer.innerHTML = html;
@@ -786,8 +1033,11 @@
                         <div class="space-y-4 overflow-y-auto flex-1 hide-scrollbar pb-2">`;
                     colTasks.forEach(task => {
                         const isDone = task.status === 'selesai';
+                        const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5' : '';
+                        const onclickStr = this.state.role !== 'guest' ? `onclick="app.openModal(${task.id})"` : '';
+                        
                         html += `
-                        <div class="bg-white p-5 rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer" onclick="app.openModal(${task.id})">
+                        <div class="bg-white p-5 rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100 transition-all group ${pointerClass}" ${onclickStr}>
                             <div class="flex justify-between items-start mb-3">
                                 <span class="px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
                                 <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">${task.division}</span>
@@ -815,11 +1065,13 @@
                     sorted.forEach(task => {
                         const isDone = task.status === 'selesai';
                         const ringColor = isDone ? 'border-emerald-500 bg-emerald-500' : 'border-indigo-500 bg-white';
+                        const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer hover:shadow-md' : '';
+                        const onclickStr = this.state.role !== 'guest' ? `onclick="app.openModal(${task.id})"` : '';
                         
                         html += `
                         <div class="relative group">
                             <div class="absolute -left-[43px] top-6 w-6 h-6 rounded-full border-4 shadow-sm ${ringColor} transition-colors"></div>
-                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 ml-6 hover:shadow-md cursor-pointer transition-all" onclick="app.openModal(${task.id})">
+                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 ml-6 transition-all ${pointerClass}" ${onclickStr}>
                                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
                                     <div class="text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl flex items-center tracking-wide"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-2"></i>${task.due_date}</div>
                                     <span class="px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
@@ -835,12 +1087,13 @@
             },
 
             async renderSettings() {
+                if (this.state.role !== 'admin') return;
+
                 const { data: profiles } = await supabaseClient.from('profiles').select('*').order('name');
                 
                 let html = `
                 <div class="flex flex-col gap-6 xl:gap-8 pb-12 max-w-7xl mx-auto">
                     
-                    <!-- Area Atas: Pendaftaran & Keamanan -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
                         <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60 flex flex-col h-full">
                             <h3 class="font-extrabold text-xl mb-3 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="user-plus" class="w-4.5 h-4.5 text-white"></i></div> Pendaftaran Akun</h3>
@@ -885,7 +1138,6 @@
                         </div>
                     </div>
 
-                    <!-- Area Bawah: Tabel Divisi & Kategori -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
                         <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60 flex flex-col h-full">
                             <h3 class="font-extrabold text-xl mb-6 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="layers" class="w-4.5 h-4.5 text-white"></i></div> Data Divisi</h3>
@@ -916,16 +1168,16 @@
                         </div>
 
                         <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60 flex flex-col h-full">
-                            <h3 class="font-extrabold text-xl mb-6 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="tag" class="w-4.5 h-4.5 text-white"></i></div> Data Kategori</h3>
+                            <h3 class="font-extrabold text-xl mb-6 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="tag" class="w-4.5 h-4.5 text-white"></i></div> Data Kode HUB</h3>
                             <div class="flex space-x-3 mb-6">
-                                <input type="text" id="newCategory" placeholder="Nama kategori baru..." class="flex-1 px-5 py-3.5 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
+                                <input type="text" id="newCategory" placeholder="Nama Kode HUB baru..." class="flex-1 px-5 py-3.5 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
                                 <button onclick="app.addSimpleItem('categories', 'newCategory')" class="bg-slate-900 text-white px-5 py-3.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"><i data-lucide="plus" class="w-5 h-5"></i></button>
                             </div>
                             <div class="overflow-x-auto rounded-xl border border-slate-200 flex-1 bg-white">
                                 <table class="w-full text-left text-sm">
                                     <thead class="bg-slate-50 border-b border-slate-200">
                                         <tr>
-                                            <th class="px-5 py-4 font-extrabold text-slate-600">Nama Kategori</th>
+                                            <th class="px-5 py-4 font-extrabold text-slate-600">Nama Kode HUB</th>
                                             <th class="px-5 py-4 font-extrabold text-slate-600 text-right w-28">Aksi</th>
                                         </tr>
                                     </thead>
