@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow Pro - Premium UI</title>
+    <title>TaskFlow</title>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -189,7 +190,7 @@
 
     <!-- Modal Form Task -->
     <div id="taskModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden items-center justify-center p-4 sm:p-6 transition-opacity">
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-full border border-slate-100/50">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-100/50">
             <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
                 <h2 id="modalTitle" class="text-2xl font-extrabold text-slate-900 tracking-tight">Buat Tugas</h2>
                 <button onclick="app.closeModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-full transition-colors outline-none">
@@ -232,6 +233,36 @@
                             <input type="date" id="taskDueDate" required class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none">
                         </div>
                     </div>
+                    
+                    <div class="border-t border-slate-100 pt-6 mt-2">
+                        <label class="block text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">Daftar Sub Tugas</label>
+                        <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-200 mb-4 shadow-sm">
+                            <input type="text" id="newSubtaskTitle" placeholder="Judul sub tugas..." class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none mb-4 text-sm font-semibold text-slate-800">
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-widest">Divisi</label>
+                                    <select id="newSubtaskDiv" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-white appearance-none cursor-pointer"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-widest">Kode HUB</label>
+                                    <select id="newSubtaskCat" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-white appearance-none cursor-pointer"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-widest">Prioritas</label>
+                                    <select id="newSubtaskPrio" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-white appearance-none cursor-pointer">
+                                        <option value="rendah">Rendah</option>
+                                        <option value="sedang" selected>Sedang</option>
+                                        <option value="tinggi">Tinggi</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" onclick="app.addSubtask()" class="w-full bg-slate-900 text-white px-5 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-md shadow-slate-200 active:scale-95 flex items-center justify-center">
+                                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>Tambah Sub Tugas
+                            </button>
+                        </div>
+                        <div id="subtaskList" class="space-y-3 max-h-56 overflow-y-auto custom-scrollbar pr-2"></div>
+                    </div>
 
                     <div id="editFields" class="hidden space-y-6 border-t border-slate-100 pt-8 mt-4">
                         <div>
@@ -245,7 +276,7 @@
                         </div>
 
                         <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100/50">
-                            <label class="block text-xs font-bold text-indigo-600 mb-3 uppercase tracking-widest">Catatan Progres (Gunakan - atau 1. untuk list)</label>
+                            <label class="block text-xs font-bold text-indigo-600 mb-3 uppercase tracking-widest">Catatan Progres</label>
                             <textarea id="taskUpdateLog" rows="2" placeholder="Ketik laporan terbaru..." class="w-full px-5 py-3 rounded-xl bg-white border border-indigo-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-medium resize-none"></textarea>
                         </div>
 
@@ -304,7 +335,8 @@
             formState: {
                 divisions: [],
                 category: '',
-                priority: 'sedang'
+                priority: 'sedang',
+                subtasks: []
             },
             dialogResolve: null,
 
@@ -656,6 +688,7 @@
                 
                 this.state.tasks = tasks.map(t => ({
                     ...t,
+                    subtasks: t.subtasks || [],
                     updates: updates.filter(u => u.task_id === t.id).map(u => ({
                         id: u.id,
                         date: new Date(u.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour:'2-digit', minute:'2-digit'}),
@@ -665,6 +698,17 @@
                 }));
 
                 this.render();
+            },
+
+            populateSubtaskSelects() {
+                const divSelect = document.getElementById('newSubtaskDiv');
+                const catSelect = document.getElementById('newSubtaskCat');
+                if(divSelect) {
+                    divSelect.innerHTML = '<option value="">Pilih Divisi</option>' + this.state.divisions.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+                }
+                if(catSelect) {
+                    catSelect.innerHTML = '<option value="">Pilih Kode HUB</option>' + this.state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                }
             },
 
             renderFormPills() {
@@ -702,6 +746,78 @@
                         return `<button type="button" onclick="app.setFormPriority('${p.id}')" class="${baseCls} ${active ? p.activeColor : inactiveCls}">${p.label}</button>`;
                     }).join('');
                 }
+            },
+
+            renderSubtaskListModal() {
+                const container = document.getElementById('subtaskList');
+                if (!container) return;
+                
+                if (this.formState.subtasks.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-slate-400 font-medium italic">Tidak ada sub tugas terdaftar.</p>';
+                    return;
+                }
+
+                container.innerHTML = this.formState.subtasks.map(s => `
+                    <div class="flex flex-col p-4 bg-white rounded-2xl border border-slate-200 group transition-all shadow-sm mb-3">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start space-x-3 flex-1 overflow-hidden pr-4">
+                                <button type="button" onclick="app.toggleSubtaskModal(${s.id})" class="text-slate-400 hover:text-indigo-600 outline-none transition-colors shrink-0 mt-0.5">
+                                    <i data-lucide="${s.completed ? 'check-square' : 'square'}" class="w-5 h-5 ${s.completed ? 'text-emerald-500' : ''}"></i>
+                                </button>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold ${s.completed ? 'line-through text-slate-400' : 'text-slate-800'}">${s.text}</span>
+                                    <div class="flex flex-wrap items-center gap-2 mt-2.5">
+                                        <span class="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(s.priority)}">${s.priority}</span>
+                                        <span class="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md">${s.division}</span>
+                                        <span class="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md">${s.category}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="app.deleteSubtaskModal(${s.id})" class="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity outline-none shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            },
+
+            addSubtask() {
+                const titleInput = document.getElementById('newSubtaskTitle');
+                const divInput = document.getElementById('newSubtaskDiv');
+                const catInput = document.getElementById('newSubtaskCat');
+                const prioInput = document.getElementById('newSubtaskPrio');
+
+                const text = titleInput.value.trim();
+                if (!text) {
+                    this.showNotification('Judul sub tugas wajib diisi', 'error');
+                    return;
+                }
+
+                this.formState.subtasks.push({
+                    id: Date.now(),
+                    text: text,
+                    division: divInput.value || 'Tanpa Divisi',
+                    category: catInput.value || 'Tanpa Kode HUB',
+                    priority: prioInput.value || 'sedang',
+                    completed: false
+                });
+
+                titleInput.value = '';
+                divInput.value = '';
+                catInput.value = '';
+                prioInput.value = 'sedang';
+
+                this.renderSubtaskListModal();
+            },
+
+            toggleSubtaskModal(id) {
+                const st = this.formState.subtasks.find(s => s.id === id);
+                if (st) st.completed = !st.completed;
+                this.renderSubtaskListModal();
+            },
+
+            deleteSubtaskModal(id) {
+                this.formState.subtasks = this.formState.subtasks.filter(s => s.id !== id);
+                this.renderSubtaskListModal();
             },
 
             toggleFormDivision(name) {
@@ -765,11 +881,33 @@
                 lucide.createIcons();
             },
 
+            async toggleTaskSubtask(taskId, subtaskId, event) {
+                if (event) event.stopPropagation();
+                if (this.state.role === 'guest') return;
+                
+                const task = this.state.tasks.find(t => t.id === taskId);
+                if (!task) return;
+                
+                const updatedSubtasks = task.subtasks.map(st => 
+                    st.id === subtaskId ? { ...st, completed: !st.completed } : st
+                );
+                
+                const updatedTasks = this.state.tasks.map(t => 
+                    t.id === taskId ? { ...t, subtasks: updatedSubtasks } : t
+                );
+                this.state.tasks = updatedTasks;
+                
+                this.renderList(this.getFilteredTasks());
+                lucide.createIcons();
+
+                await supabaseClient.from('tasks').update({ subtasks: updatedSubtasks }).eq('id', taskId);
+                await this.fetchData();
+            },
+
             getFilteredTasks() {
                 return this.state.tasks.filter(t => {
                     const q = this.state.searchQuery;
                     const matchSearch = (t.title || '').toLowerCase().includes(q) ||
-                                        (t.description || '').toLowerCase().includes(q) ||
                                         (t.division || '').toLowerCase().includes(q) ||
                                         (t.category || '').toLowerCase().includes(q);
                     const matchVisibility = this.state.hideDone ? t.status !== 'selesai' : true;
@@ -807,6 +945,8 @@
                 if (this.state.role === 'guest') return;
                 document.getElementById('modalTitle').innerText = id ? 'Edit Data Tugas' : 'Buat Tugas Baru';
                 
+                this.populateSubtaskSelects();
+
                 if(id) {
                     const task = this.state.tasks.find(t => t.id === id);
                     this.fId.value = task.id;
@@ -816,6 +956,7 @@
                     this.formState.divisions = task.division ? task.division.split(', ') : [];
                     this.formState.category = task.category;
                     this.formState.priority = task.priority;
+                    this.formState.subtasks = task.subtasks ? [...task.subtasks] : [];
                     
                     this.fDue.value = task.due_date;
                     this.fStatus.value = task.status;
@@ -857,12 +998,14 @@
                     this.formState.divisions = [];
                     this.formState.category = this.state.categories.length > 0 ? this.state.categories[0].name : '';
                     this.formState.priority = 'sedang';
+                    this.formState.subtasks = [];
 
                     this.editFields?.classList.add('hidden');
                     this.historyContainer?.classList.add('hidden');
                 }
                 
                 this.renderFormPills();
+                this.renderSubtaskListModal();
                 this.modal.classList.remove('hidden');
                 this.modal.classList.add('flex');
                 lucide.createIcons();
@@ -888,6 +1031,7 @@
                     division: this.formState.divisions.join(', ') || 'Tanpa Divisi',
                     category: this.formState.category || 'Tanpa Kode HUB',
                     priority: this.formState.priority,
+                    subtasks: this.formState.subtasks,
                     due_date: this.fDue.value,
                     status: isEditing ? this.fStatus.value : 'mulai',
                     updated_at: now
@@ -1004,6 +1148,10 @@
                         : '';
                     
                     const pointerClass = 'cursor-pointer hover:opacity-80 transition-opacity';
+                    
+                    const totalSt = task.subtasks?.length || 0;
+                    const doneSt = task.subtasks?.filter(s => s.completed).length || 0;
+                    const stHtml = totalSt > 0 ? `<span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg text-[10px] font-bold"><i data-lucide="check-square" class="w-3 h-3 inline mr-1"></i>${doneSt}/${totalSt}</span>` : '';
 
                     html += `
                     <div class="flex flex-col p-6 bg-white hover:bg-slate-50 transition-colors">
@@ -1016,6 +1164,7 @@
                                         <span class="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-600">${task.division}</span>
                                         <span class="text-slate-300">•</span>
                                         <span>${task.category}</span>
+                                        ${stHtml}
                                     </div>
                                 </div>
                             </div>
@@ -1030,10 +1179,38 @@
                         </div>`;
 
                     if (isExpanded) {
+                        let subtasksHtml = '';
+                        if (task.subtasks && task.subtasks.length > 0) {
+                            subtasksHtml = `
+                                <div class="space-y-3 mt-3">
+                                    ${task.subtasks.map(st => `
+                                        <div class="flex items-start space-x-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all ${this.state.role !== 'guest' ? 'cursor-pointer hover:border-indigo-200' : ''}" ${this.state.role !== 'guest' ? `onclick="app.toggleTaskSubtask(${task.id}, ${st.id}, event)"` : ''}>
+                                            <i data-lucide="${st.completed ? 'check-square' : 'square'}" class="w-5 h-5 shrink-0 mt-0.5 ${st.completed ? 'text-emerald-500' : 'text-slate-300'}"></i>
+                                            <div class="flex flex-col">
+                                                <span class="text-sm font-bold ${st.completed ? 'line-through text-slate-400' : 'text-slate-800'}">${st.text}</span>
+                                                <div class="flex flex-wrap items-center gap-2 mt-2.5">
+                                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(st.priority)}">${st.priority || 'sedang'}</span>
+                                                    <span class="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">${st.division || 'Tanpa Divisi'}</span>
+                                                    <span class="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">${st.category || 'Tanpa Kode HUB'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                        } else {
+                            subtasksHtml = '<p class="text-sm text-slate-400 font-medium italic mt-2">Tidak ada sub tugas terdaftar.</p>';
+                        }
+
                         html += `
                         <div class="mt-5 pl-11 pr-2 animate-fade-in-down">
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 bg-slate-50/80 rounded-2xl border border-slate-200/60">
                                 <div class="md:col-span-5">
+                                    <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i data-lucide="list-checks" class="w-3.5 h-3.5 mr-2"></i>Daftar Sub Tugas</h5>
+                                    ${subtasksHtml}
+                                    
+                                    <div class="h-px w-full bg-slate-200/60 my-6"></div>
+
                                     <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i data-lucide="align-left" class="w-3.5 h-3.5 mr-2"></i>Detail Pekerjaan</h5>
                                     <div class="custom-prose prose prose-sm prose-slate max-w-none text-sm text-slate-700 font-medium leading-relaxed">${task.description ? marked.parse(task.description) : '<span class="italic text-slate-400">Tidak ada deskripsi.</span>'}</div>
                                     
@@ -1046,7 +1223,7 @@
                                 <div class="md:col-span-7 border-t border-slate-200/60 pt-5 md:border-t-0 md:pt-0 md:border-l md:pl-6">
                                     <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="history" class="w-3.5 h-3.5 mr-2"></i>Riwayat Progres</h5>
                                     ${task.updates && task.updates.length > 0 ? `
-                                        <div class="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                                        <div class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2">
                                             ${task.updates.map(u => `
                                                 <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                                                     <div class="flex justify-between items-center mb-1.5">
@@ -1089,6 +1266,10 @@
                         const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5' : '';
                         const onclickStr = this.state.role !== 'guest' ? `onclick="app.openModal(${task.id})"` : '';
                         
+                        const totalSt = task.subtasks?.length || 0;
+                        const doneSt = task.subtasks?.filter(s => s.completed).length || 0;
+                        const stHtml = totalSt > 0 ? `<span class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg flex items-center"><i data-lucide="check-square" class="w-3 h-3 mr-1"></i>${doneSt}/${totalSt}</span>` : '';
+
                         html += `
                         <div class="bg-white p-5 rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100 transition-all group ${pointerClass}" ${onclickStr}>
                             <div class="flex justify-between items-start mb-3">
@@ -1098,7 +1279,10 @@
                             <h4 class="font-bold text-[15px] leading-snug mb-4 ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</h4>
                             <div class="flex items-center justify-between pt-3.5 border-t border-slate-50">
                                 <span class="text-[11px] font-bold text-slate-400 flex items-center"><i data-lucide="clock" class="w-3.5 h-3.5 mr-1.5 text-slate-300"></i>${task.due_date}</span>
-                                ${task.updates && task.updates.length > 0 ? `<span class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg flex items-center"><i data-lucide="message-square" class="w-3 h-3 mr-1.5"></i>${task.updates.length}</span>` : ''}
+                                <div class="flex items-center space-x-2">
+                                    ${stHtml}
+                                    ${task.updates && task.updates.length > 0 ? `<span class="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg flex items-center"><i data-lucide="message-square" class="w-3 h-3 mr-1.5"></i>${task.updates.length}</span>` : ''}
+                                </div>
                             </div>
                         </div>`;
                     });
