@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -44,51 +43,54 @@
         
         <header class="glass-header border-b border-slate-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.02)] z-40 shrink-0 sticky top-0">
             <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16 sm:h-20 relative">
+                <div class="flex justify-between items-center h-16 sm:h-20 gap-4">
                     
-                    <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="app.setView('list')">
-                        <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-sm">
+                    <div class="flex items-center space-x-3 cursor-pointer shrink-0 lg:w-1/4" onclick="app.setView('list')">
+                        <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-sm shrink-0">
                             <i data-lucide="layers" class="w-4.5 h-4.5 text-white"></i>
                         </div>
-                        <span class="text-xl font-extrabold text-slate-900 tracking-tight hidden sm:block">TaskFlow</span>
+                        <span class="text-xl font-extrabold text-slate-900 tracking-tight hidden lg:block truncate">TaskFlow</span>
                     </div>
                     
-                    <nav class="hidden md:flex items-center space-x-1 absolute left-1/2 transform -translate-x-1/2">
-                        <button onclick="app.setView('list')" data-nav="list" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
-                            <i data-lucide="list" class="w-4 h-4"></i><span>Daftar</span>
-                        </button>
-                        <button onclick="app.setView('board')" data-nav="board" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
-                            <i data-lucide="layout" class="w-4 h-4"></i><span>Papan</span>
-                        </button>
-                        <button onclick="app.setView('timeline')" data-nav="timeline" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
-                            <i data-lucide="clock" class="w-4 h-4"></i><span>Timeline</span>
-                        </button>
-                        <button onclick="app.setView('settings')" data-nav="settings" id="nav-settings-desktop" class="hidden flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
-                            <i data-lucide="settings" class="w-4 h-4"></i><span>Sistem</span>
-                        </button>
-                    </nav>
+                    <div class="flex-1 flex justify-center hidden md:flex">
+                        <nav class="flex items-center relative bg-white shadow-[0_0_1px_0_rgba(24,94,224,0.15),0_6px_12px_0_rgba(24,94,224,0.15)] p-1.5 rounded-full">
+                            <div id="nav-glider" class="absolute top-1.5 h-10 bg-indigo-50 rounded-full transition-all duration-300 ease-out z-0"></div>
+                            <button onclick="app.setView('list')" data-nav-desktop="list" class="relative z-10 flex items-center justify-center px-4 xl:px-5 h-10 rounded-full text-sm font-bold transition-colors text-slate-500 hover:text-slate-900">
+                                <i data-lucide="list" class="w-4 h-4 mr-2"></i>Daftar
+                            </button>
+                            <button onclick="app.setView('board')" data-nav-desktop="board" class="relative z-10 flex items-center justify-center px-4 xl:px-5 h-10 rounded-full text-sm font-bold transition-colors text-slate-500 hover:text-slate-900">
+                                <i data-lucide="layout" class="w-4 h-4 mr-2"></i>Papan
+                            </button>
+                            <button onclick="app.setView('timeline')" data-nav-desktop="timeline" class="relative z-10 flex items-center justify-center px-4 xl:px-5 h-10 rounded-full text-sm font-bold transition-colors text-slate-500 hover:text-slate-900">
+                                <i data-lucide="clock" class="w-4 h-4 mr-2"></i>Timeline
+                            </button>
+                            <button onclick="app.setView('settings')" data-nav-desktop="settings" id="nav-settings-desktop" class="hidden relative z-10 flex items-center justify-center px-4 xl:px-5 h-10 rounded-full text-sm font-bold transition-colors text-slate-500 hover:text-slate-900">
+                                <i data-lucide="settings" class="w-4 h-4 mr-2"></i>Sistem
+                            </button>
+                        </nav>
+                    </div>
 
-                    <div class="flex items-center space-x-4 shrink-0">
+                    <div class="flex items-center justify-end space-x-4 shrink-0 lg:w-1/4">
                         <div class="hidden xl:flex items-center bg-slate-100/80 border border-slate-200/60 rounded-full px-4 py-2 w-64 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all">
                             <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                            <input type="text" id="searchInput" placeholder="Cari tugas, divisi, atau HUB..." class="bg-transparent border-none outline-none ml-2 text-sm w-full text-slate-700 font-medium placeholder:font-normal">
+                            <input type="text" id="searchInput" placeholder="Cari..." class="bg-transparent border-none outline-none ml-2 text-sm w-full text-slate-700 font-medium placeholder:font-normal">
                         </div>
                         
-                        <div id="auth-section-guest" class="flex items-center lg:border-l lg:border-slate-200 lg:pl-5">
+                        <div id="auth-section-guest" class="flex items-center xl:border-l xl:border-slate-200 xl:pl-5">
                             <button onclick="app.openLoginModal()" class="flex items-center justify-center space-x-2 bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-slate-200 outline-none">
                                 <i data-lucide="log-in" class="w-4 h-4"></i>
                                 <span>Masuk</span>
                             </button>
                         </div>
 
-                        <div id="auth-section-user" class="hidden items-center space-x-4 lg:border-l lg:border-slate-200 lg:pl-5">
+                        <div id="auth-section-user" class="hidden items-center space-x-4 xl:border-l xl:border-slate-200 xl:pl-5">
                             <div class="flex flex-col items-end hidden sm:flex">
                                 <span id="userNameDisplay" class="text-sm font-bold text-slate-800"></span>
                                 <span id="userEmailDisplay" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"></span>
                             </div>
                             <button onclick="app.handleLogout()" class="flex items-center justify-center space-x-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all outline-none" title="Keluar Akun">
                                 <i data-lucide="log-out" class="w-4 h-4"></i>
-                                <span class="hidden lg:block">Keluar</span>
+                                <span class="hidden xl:block">Keluar</span>
                             </button>
                         </div>
 
@@ -105,16 +107,16 @@
                         <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
                         <input type="text" id="searchInputMobile" placeholder="Cari tugas, divisi, atau HUB..." class="bg-transparent border-none outline-none ml-3 text-sm w-full text-slate-700 font-medium">
                     </div>
-                    <button onclick="app.setView('list'); app.toggleMobileMenu()" data-nav="list" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                    <button onclick="app.setView('list'); app.toggleMobileMenu()" data-nav-mobile="list" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
                         <i data-lucide="list" class="w-5 h-5"></i><span>Daftar Tugas</span>
                     </button>
-                    <button onclick="app.setView('board'); app.toggleMobileMenu()" data-nav="board" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                    <button onclick="app.setView('board'); app.toggleMobileMenu()" data-nav-mobile="board" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
                         <i data-lucide="layout" class="w-5 h-5"></i><span>Papan Kanban</span>
                     </button>
-                    <button onclick="app.setView('timeline'); app.toggleMobileMenu()" data-nav="timeline" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                    <button onclick="app.setView('timeline'); app.toggleMobileMenu()" data-nav-mobile="timeline" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
                         <i data-lucide="clock" class="w-5 h-5"></i><span>Timeline</span>
                     </button>
-                    <button onclick="app.setView('settings'); app.toggleMobileMenu()" data-nav="settings" id="nav-settings-mobile" class="hidden w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                    <button onclick="app.setView('settings'); app.toggleMobileMenu()" data-nav-mobile="settings" id="nav-settings-mobile" class="hidden w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
                         <i data-lucide="settings" class="w-5 h-5"></i><span>Pengaturan Sistem</span>
                     </button>
                     <div class="h-px w-full bg-slate-100 my-4"></div>
@@ -209,6 +211,7 @@
                     
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 flex-1">
                         
+                        <!-- Kolom Kiri -->
                         <div class="lg:col-span-7 flex flex-col space-y-6">
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Judul Tugas</label>
@@ -220,23 +223,23 @@
                                 <textarea id="taskDesc" class="flex-1 w-full px-5 py-4 rounded-2xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all resize-none text-sm text-slate-700 font-medium leading-relaxed"></textarea>
                             </div>
 
-                            <div class="border-t border-slate-200/60 pt-6 mt-2 flex flex-col flex-1 min-h-[250px]">
+                            <div class="border-t border-slate-100 pt-6 mt-2 flex flex-col flex-1 min-h-[250px]">
                                 <label class="block text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">Daftar Sub Tugas</label>
-                                <div class="bg-white p-5 rounded-2xl border border-slate-200 mb-4 shadow-sm">
-                                    <input type="text" id="newSubtaskTitle" placeholder="Judul sub tugas..." class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 mb-4 text-sm font-semibold text-slate-800">
+                                <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-200 mb-4 shadow-sm">
+                                    <input type="text" id="newSubtaskTitle" placeholder="Judul sub tugas..." class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none mb-4 text-sm font-semibold text-slate-800">
                                     
                                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                                         <div>
                                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-widest">Divisi</label>
-                                            <select id="newSubtaskDiv" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-slate-50 appearance-none cursor-pointer"></select>
+                                            <select id="newSubtaskDiv" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-white appearance-none cursor-pointer"></select>
                                         </div>
                                         <div>
                                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-widest">Kode HUB</label>
-                                            <select id="newSubtaskCat" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-slate-50 appearance-none cursor-pointer"></select>
+                                            <select id="newSubtaskCat" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-white appearance-none cursor-pointer"></select>
                                         </div>
                                         <div>
                                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-widest">Prioritas</label>
-                                            <select id="newSubtaskPrio" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-slate-50 appearance-none cursor-pointer">
+                                            <select id="newSubtaskPrio" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 outline-none bg-white appearance-none cursor-pointer">
                                                 <option value="rendah">Rendah</option>
                                                 <option value="sedang" selected>Sedang</option>
                                                 <option value="tinggi">Tinggi</option>
@@ -251,7 +254,8 @@
                             </div>
                         </div>
 
-                        <div class="lg:col-span-5 flex flex-col space-y-6 lg:pl-6 lg:border-l lg:border-slate-200/60">
+                        <!-- Kolom Kanan -->
+                        <div class="lg:col-span-5 flex flex-col space-y-6 lg:pl-6 lg:border-l lg:border-slate-100">
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">Divisi (Pilih lebih dari satu)</label>
@@ -274,10 +278,10 @@
                                 </div>
                             </div>
 
-                            <div id="editFields" class="hidden flex flex-col space-y-6 border-t border-slate-200/60 pt-6 mt-2 flex-1">
+                            <div id="editFields" class="hidden flex flex-col space-y-6 border-t border-slate-100 pt-6 mt-2 flex-1">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Status Tahapan</label>
-                                    <select id="taskStatus" class="w-full px-5 py-3.5 rounded-2xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 appearance-none cursor-pointer transition-all">
+                                    <select id="taskStatus" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer">
                                         <option value="mulai">Mulai</option>
                                         <option value="proses">Proses</option>
                                         <option value="waiting">Waiting</option>
@@ -285,9 +289,9 @@
                                     </select>
                                 </div>
 
-                                <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
+                                <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100/50">
                                     <label class="block text-xs font-bold text-indigo-600 mb-3 uppercase tracking-widest">Catatan Progres (Gunakan - atau 1. untuk list)</label>
-                                    <textarea id="taskUpdateLog" rows="2" placeholder="Ketik laporan terbaru..." class="w-full px-5 py-3 rounded-xl bg-white border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 text-sm shadow-sm font-medium resize-none transition-all"></textarea>
+                                    <textarea id="taskUpdateLog" rows="2" placeholder="Ketik laporan terbaru..." class="w-full px-5 py-3 rounded-xl bg-white border border-indigo-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-medium resize-none"></textarea>
                                 </div>
 
                                 <div id="updateHistoryContainer" class="hidden flex flex-col flex-1 min-h-[150px]">
@@ -324,47 +328,47 @@
                 </div>
             </div>
             
-            <div class="p-8 overflow-y-auto flex-1 hide-scrollbar bg-slate-50/30">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full items-start">
-                    
-                    <!-- Kolom 1: Informasi & Sub Tugas -->
-                    <div class="flex flex-col gap-6">
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm">
-                            <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="info" class="w-3.5 h-3.5 mr-2"></i>Informasi Utama</h5>
-                            <div class="space-y-4">
-                                <div>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Divisi</p>
-                                    <p id="dtlDiv" class="text-sm font-bold text-slate-800"></p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Kode HUB</p>
-                                    <p id="dtlCat" class="text-sm font-bold text-slate-800"></p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Prioritas</p>
-                                    <div id="dtlPrio"></div>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Due Date</p>
-                                    <p id="dtlDue" class="text-sm font-bold text-slate-800 flex items-center"></p>
-                                </div>
-                            </div>
+            <div class="p-8 overflow-y-auto flex-1 hide-scrollbar bg-slate-50/30 flex flex-col gap-6">
+                
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm w-full shrink-0">
+                    <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="info" class="w-3.5 h-3.5 mr-2"></i>Informasi Utama</h5>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Divisi</p>
+                            <p id="dtlDiv" class="text-sm font-bold text-slate-800"></p>
                         </div>
-
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col max-h-[400px]">
-                            <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="list-checks" class="w-3.5 h-3.5 mr-2"></i>Sub Tugas</h5>
-                            <div id="dtlSubtasks" class="space-y-2 overflow-y-auto custom-scrollbar pr-2"></div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Kode HUB</p>
+                            <p id="dtlCat" class="text-sm font-bold text-slate-800"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Prioritas</p>
+                            <div id="dtlPrio"></div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Due Date</p>
+                            <p id="dtlDue" class="text-sm font-bold text-slate-800 flex items-center"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Durasi Tugas</p>
+                            <p id="dtlDuration" class="text-sm font-bold text-indigo-600"></p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Kolom 2: Detail Pekerjaan -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col h-full max-h-[800px]">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full items-start">
+                    
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col h-full max-h-[600px]">
+                        <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center shrink-0"><i data-lucide="list-checks" class="w-3.5 h-3.5 mr-2"></i>Sub Tugas</h5>
+                        <div id="dtlSubtasks" class="space-y-2 overflow-y-auto custom-scrollbar pr-2 pb-4"></div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col h-full max-h-[600px]">
                         <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center shrink-0"><i data-lucide="align-left" class="w-3.5 h-3.5 mr-2"></i>Detail Pekerjaan</h5>
                         <div id="dtlDesc" class="custom-prose prose prose-sm prose-slate max-w-none text-sm text-slate-700 font-medium leading-relaxed overflow-y-auto custom-scrollbar pr-2 pb-4"></div>
                     </div>
 
-                    <!-- Kolom 3: Riwayat Progres -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col h-full max-h-[800px]">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col h-full max-h-[600px]">
                         <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center shrink-0"><i data-lucide="history" class="w-3.5 h-3.5 mr-2"></i>Riwayat Progres</h5>
                         <div id="dtlHistory" class="space-y-3 overflow-y-auto custom-scrollbar pr-2 pb-4"></div>
                     </div>
@@ -426,6 +430,8 @@
                 this.bindEvents();
                 await this.checkAuth();
                 await this.fetchData();
+                window.addEventListener('resize', () => this.setView(this.state.view));
+                setTimeout(() => this.setView(this.state.view), 100);
             },
 
             cacheDOM() {
@@ -909,14 +915,37 @@
 
             setView(viewName) {
                 this.state.view = viewName;
-                const navButtons = document.querySelectorAll('[data-nav]');
-                navButtons.forEach(btn => {
-                    if (btn.dataset.nav === viewName) {
-                        btn.classList.add('text-slate-900', 'bg-slate-100');
-                        btn.classList.remove('text-slate-500', 'hover:bg-slate-100/80');
+                
+                // Update Desktop Nav
+                const desktopBtns = document.querySelectorAll('button[data-nav-desktop]');
+                const glider = document.getElementById('nav-glider');
+                
+                desktopBtns.forEach(btn => {
+                    if (btn.dataset.navDesktop === viewName) {
+                        btn.classList.add('text-indigo-600');
+                        btn.classList.remove('text-slate-500', 'hover:text-slate-900');
+                        
+                        if (glider && window.innerWidth >= 768) {
+                            setTimeout(() => {
+                                glider.style.width = `${btn.offsetWidth}px`;
+                                glider.style.left = `${btn.offsetLeft}px`;
+                            }, 10);
+                        }
                     } else {
-                        btn.classList.remove('text-slate-900', 'bg-slate-100');
-                        btn.classList.add('text-slate-500', 'hover:bg-slate-100/80');
+                        btn.classList.remove('text-indigo-600');
+                        btn.classList.add('text-slate-500', 'hover:text-slate-900');
+                    }
+                });
+
+                // Update Mobile Nav
+                const mobileBtns = document.querySelectorAll('button[data-nav-mobile]');
+                mobileBtns.forEach(btn => {
+                    if (btn.dataset.navMobile === viewName) {
+                        btn.classList.add('text-indigo-600', 'bg-indigo-50');
+                        btn.classList.remove('text-slate-600', 'hover:bg-slate-50');
+                    } else {
+                        btn.classList.remove('text-indigo-600', 'bg-indigo-50');
+                        btn.classList.add('text-slate-600', 'hover:bg-slate-50');
                     }
                 });
 
@@ -961,9 +990,16 @@
             getFilteredTasks() {
                 let filtered = this.state.tasks.filter(t => {
                     const q = this.state.searchQuery;
+                    const subtasksMatch = t.subtasks && t.subtasks.some(st => (st.text || '').toLowerCase().includes(q));
+                    const updatesMatch = t.updates && t.updates.some(u => (u.text || '').toLowerCase().includes(q));
+
                     const matchSearch = (t.title || '').toLowerCase().includes(q) ||
+                                        (t.description || '').toLowerCase().includes(q) ||
                                         (t.division || '').toLowerCase().includes(q) ||
-                                        (t.category || '').toLowerCase().includes(q);
+                                        (t.category || '').toLowerCase().includes(q) ||
+                                        subtasksMatch ||
+                                        updatesMatch;
+                    
                     const matchVisibility = this.state.hideDone ? t.status !== 'selesai' : true;
                     return matchSearch && matchVisibility;
                 });
@@ -990,6 +1026,27 @@
             getPriorityColor(priority) {
                 const map = { 'tinggi': 'bg-rose-50 text-rose-600 border-rose-100', 'sedang': 'bg-amber-50 text-amber-600 border-amber-100', 'rendah': 'bg-sky-50 text-sky-600 border-sky-100' };
                 return map[priority] || 'bg-slate-50 text-slate-600 border-slate-200';
+            },
+
+            formatDateRange(createdAt, status) {
+                if (!createdAt) return '';
+                const created = new Date(createdAt);
+                const dateStr = created.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                
+                if (status === 'selesai') return `Dibuat: ${dateStr}`;
+                
+                const now = new Date();
+                const diffMs = now - created;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
+                const diffDays = Math.floor(diffHours / 24);
+                
+                let elapsed = '';
+                if (diffDays > 0) elapsed = `${diffDays} hari berjalan`;
+                else if (diffHours > 0) elapsed = `${diffHours} jam berjalan`;
+                else elapsed = `${diffMins} menit berjalan`;
+
+                return `Dibuat: ${dateStr} • ${elapsed}`;
             },
 
             async updateStatus(id, newStatus) {
@@ -1042,6 +1099,7 @@
                 document.getElementById('dtlPrio').innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>`;
                 
                 document.getElementById('dtlDue').innerHTML = `<i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 text-slate-400"></i>${task.due_date}`;
+                document.getElementById('dtlDuration').innerText = this.formatDateRange(task.created_at, task.status);
 
                 const descContainer = document.getElementById('dtlDesc');
                 descContainer.innerHTML = task.description ? marked.parse(task.description) : '<span class="italic text-slate-400">Tidak ada deskripsi.</span>';
@@ -1303,6 +1361,8 @@
                            </div>`
                         : '';
                     
+                    const pointerClass = 'cursor-pointer hover:opacity-80 transition-opacity';
+                    
                     const totalSt = task.subtasks?.length || 0;
                     const doneSt = task.subtasks?.filter(s => s.completed).length || 0;
                     const stHtml = totalSt > 0 ? `<span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg text-[10px] font-bold"><i data-lucide="check-square" class="w-3 h-3 inline mr-1"></i>${doneSt}/${totalSt}</span>` : '';
@@ -1312,13 +1372,15 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between p-6 gap-5">
                             <div class="flex items-start space-x-4 flex-1">
                                 ${statusBtn}
-                                <div class="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity" onclick="app.openDetailModal(${task.id})">
+                                <div class="min-w-0 flex-1 ${pointerClass}" onclick="app.openDetailModal(${task.id})">
                                     <h4 class="font-extrabold text-base mb-1.5 truncate ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</h4>
                                     <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500">
                                         <span class="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-600">${task.division}</span>
                                         <span class="text-slate-300">•</span>
                                         <span>${task.category}</span>
                                         ${stHtml}
+                                        <span class="text-slate-300">•</span>
+                                        <span class="text-indigo-500">${this.formatDateRange(task.created_at, task.status)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1355,8 +1417,8 @@
                         <div class="space-y-4 overflow-y-auto flex-1 hide-scrollbar pb-2">`;
                     colTasks.forEach(task => {
                         const isDone = task.status === 'selesai';
-                        const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5' : '';
-                        const onclickStr = this.state.role !== 'guest' ? `onclick="app.openDetailModal(${task.id})"` : '';
+                        const pointerClass = 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5';
+                        const onclickStr = `onclick="app.openDetailModal(${task.id})"`;
                         
                         const totalSt = task.subtasks?.length || 0;
                         const doneSt = task.subtasks?.filter(s => s.completed).length || 0;
@@ -1369,8 +1431,11 @@
                                 <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">${task.division}</span>
                             </div>
                             <h4 class="font-bold text-[15px] leading-snug mb-4 ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</h4>
-                            <div class="flex items-center justify-between pt-3.5 border-t border-slate-50">
-                                <span class="text-[11px] font-bold text-slate-400 flex items-center"><i data-lucide="clock" class="w-3.5 h-3.5 mr-1.5 text-slate-300"></i>${task.due_date}</span>
+                            <div class="flex items-end justify-between pt-3.5 border-t border-slate-50">
+                                <div class="flex flex-col gap-1.5">
+                                    <span class="text-[11px] font-bold text-slate-400 flex items-center"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 text-slate-300"></i>Due: ${task.due_date}</span>
+                                    <span class="text-[9px] font-bold text-indigo-500">${this.formatDateRange(task.created_at, task.status)}</span>
+                                </div>
                                 <div class="flex items-center space-x-2">
                                     ${stHtml}
                                     ${task.updates && task.updates.length > 0 ? `<span class="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg flex items-center"><i data-lucide="message-square" class="w-3 h-3 mr-1.5"></i>${task.updates.length}</span>` : ''}
@@ -1444,8 +1509,8 @@
                                     'rendah': 'bg-sky-500'
                                 };
                                 const barColor = colorMap[task.priority] || 'bg-slate-500';
-                                const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer' : '';
-                                const onclickStr = this.state.role !== 'guest' ? `onclick="app.openDetailModal(${task.id})"` : '';
+                                const pointerClass = 'cursor-pointer';
+                                const onclickStr = `onclick="app.openDetailModal(${task.id})"`;
 
                                 return `
                                 <div class="flex py-2 border-b border-slate-50 hover:bg-slate-50/50 transition-colors group ${pointerClass}" ${onclickStr}>
@@ -1455,6 +1520,7 @@
                                             <span class="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 border border-slate-200 px-1.5 py-0.5 rounded">${task.status}</span>
                                             <span class="text-[10px] font-bold text-slate-400 truncate">${task.division}</span>
                                         </div>
+                                        <p class="text-[9px] font-bold text-indigo-500 mt-1">${this.formatDateRange(task.created_at, task.status)}</p>
                                     </div>
                                     <div class="flex relative rounded-lg overflow-hidden h-12 items-center">
                                         ${days.map(d => {
