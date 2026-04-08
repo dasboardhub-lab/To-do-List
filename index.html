@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow Pro - Premium UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fafafa; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .island-spring { transition: all 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55); }
+        .fade-in-out { transition: opacity 0.3s ease-in-out; }
+        .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col h-screen overflow-hidden selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Dynamic Island Notification -->
+    <div id="dynamicIsland" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[999] bg-slate-900 text-white rounded-full flex items-center justify-center overflow-hidden island-spring w-0 h-0 opacity-0 shadow-2xl shadow-slate-900/20 pointer-events-none origin-center border border-slate-700/50">
+        <div id="dynamicIslandContent" class="px-6 py-2.5 flex items-center space-x-3 w-max opacity-0 fade-in-out delay-100">
+            <div id="di-icon" class="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-400 to-emerald-600 flex items-center justify-center shadow-inner shrink-0">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span id="dynamicIslandText" class="text-sm font-semibold tracking-wide"></span>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="fixed inset-0 bg-[#fafafa] z-[100] flex items-center justify-center p-4">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-slate-100/60 w-full max-w-md relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+            <div class="flex flex-col items-center justify-center mb-10 mt-4">
+                <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-200 mb-5">
+                    <i data-lucide="layers" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">TaskFlow</h1>
+                <p class="text-sm text-slate-500 mt-2 font-medium">Ruang Kerja Profesional</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-5" onsubmit="app.handleLogin(event)">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">ID Pengguna</label>
+                    <input type="text" id="kodeAkses" required class="w-full px-4 py-3.5 rounded-2xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="Masukkan ID">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Kata Sandi</label>
+                    <input type="password" id="password" required class="w-full px-4 py-3.5 rounded-2xl bg-slate-50/50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all active:scale-[0.98] mt-6 shadow-md shadow-slate-200">Masuk Aplikasi</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="flex flex-col w-full h-full hidden">
+        
+        <!-- Top Header Navigation -->
+        <header class="glass-header border-b border-slate-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.02)] z-40 shrink-0 sticky top-0">
+            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16 sm:h-20 relative">
+                    
+                    <!-- Logo Kiri -->
+                    <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="app.setView('list')">
+                        <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-sm">
+                            <i data-lucide="layers" class="w-4.5 h-4.5 text-white"></i>
+                        </div>
+                        <span class="text-xl font-extrabold text-slate-900 tracking-tight hidden sm:block">TaskFlow</span>
+                    </div>
+                    
+                    <!-- Navigasi Tengah -->
+                    <nav class="hidden md:flex items-center space-x-1 absolute left-1/2 transform -translate-x-1/2">
+                        <button onclick="app.setView('list')" data-nav="list" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
+                            <i data-lucide="list" class="w-4 h-4"></i><span>Daftar</span>
+                        </button>
+                        <button onclick="app.setView('board')" data-nav="board" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
+                            <i data-lucide="layout" class="w-4 h-4"></i><span>Papan</span>
+                        </button>
+                        <button onclick="app.setView('timeline')" data-nav="timeline" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
+                            <i data-lucide="clock" class="w-4 h-4"></i><span>Timeline</span>
+                        </button>
+                        <button onclick="app.setView('settings')" data-nav="settings" id="nav-settings-desktop" class="hidden flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-900 hover:bg-slate-100/80">
+                            <i data-lucide="settings" class="w-4 h-4"></i><span>Sistem</span>
+                        </button>
+                    </nav>
+
+                    <!-- User & Logout Kanan -->
+                    <div class="flex items-center space-x-4 shrink-0">
+                        <div class="hidden xl:flex items-center bg-slate-100/80 border border-slate-200/60 rounded-full px-4 py-2 w-64 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                            <input type="text" id="searchInput" placeholder="Cari tugas..." class="bg-transparent border-none outline-none ml-2 text-sm w-full text-slate-700 font-medium placeholder:font-normal">
+                        </div>
+                        
+                        <div class="flex items-center space-x-4 lg:border-l lg:border-slate-200 lg:pl-5">
+                            <div class="flex flex-col items-end hidden sm:flex">
+                                <span id="userNameDisplay" class="text-sm font-bold text-slate-800"></span>
+                                <span id="userEmailDisplay" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"></span>
+                            </div>
+                            <button onclick="app.handleLogout()" class="flex items-center justify-center space-x-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all outline-none" title="Keluar Akun">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <span class="hidden lg:block">Keluar</span>
+                            </button>
+                        </div>
+
+                        <button onclick="app.toggleMobileMenu()" class="md:hidden text-slate-600 hover:text-slate-900 outline-none p-1">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="md:hidden hidden border-t border-slate-100 bg-white/95 backdrop-blur-xl absolute w-full z-50 shadow-2xl pb-6 rounded-b-[2rem]">
+                <div class="px-6 pt-6 pb-2 space-y-2">
+                    <div class="flex items-center bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 mb-6">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="searchInputMobile" placeholder="Cari tugas..." class="bg-transparent border-none outline-none ml-3 text-sm w-full text-slate-700 font-medium">
+                    </div>
+                    <button onclick="app.setView('list'); app.toggleMobileMenu()" data-nav="list" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                        <i data-lucide="list" class="w-5 h-5"></i><span>Daftar Tugas</span>
+                    </button>
+                    <button onclick="app.setView('board'); app.toggleMobileMenu()" data-nav="board" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                        <i data-lucide="layout" class="w-5 h-5"></i><span>Papan Kanban</span>
+                    </button>
+                    <button onclick="app.setView('timeline'); app.toggleMobileMenu()" data-nav="timeline" class="w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                        <i data-lucide="clock" class="w-5 h-5"></i><span>Timeline</span>
+                    </button>
+                    <button onclick="app.setView('settings'); app.toggleMobileMenu()" data-nav="settings" id="nav-settings-mobile" class="hidden w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all text-slate-600 hover:bg-slate-50">
+                        <i data-lucide="settings" class="w-5 h-5"></i><span>Pengaturan Sistem</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Workspace -->
+        <main class="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center">
+            <div class="w-full max-w-[1600px] flex-1 flex flex-col">
+                
+                <div id="top-section" class="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-5 shrink-0 mt-2">
+                    <div>
+                        <h1 id="page-title" class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Tugas Berjalan</h1>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 sm:gap-4" id="action-buttons">
+                        <label class="flex items-center space-x-2 text-sm text-slate-600 cursor-pointer select-none bg-white px-4 py-2.5 rounded-xl border border-slate-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:bg-slate-50 hover:border-slate-300 transition-all">
+                            <input type="checkbox" id="toggleHideDone" onchange="app.toggleHideDone(this.checked)" class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4">
+                            <span class="font-bold">Sembunyikan Selesai</span>
+                        </label>
+                        <button onclick="app.openModal()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md shadow-slate-200 flex items-center active:scale-95">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Buat Tugas
+                        </button>
+                    </div>
+                </div>
+
+                <div id="kpi-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 shrink-0 w-full"></div>
+
+                <div id="view-container" class="flex-1 min-h-0 w-full relative"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form Task -->
+    <div id="taskModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden items-center justify-center p-4 sm:p-6 transition-opacity">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-full border border-slate-100/50">
+            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                <h2 id="modalTitle" class="text-2xl font-extrabold text-slate-900 tracking-tight">Buat Tugas</h2>
+                <button onclick="app.closeModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-full transition-colors outline-none">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto flex-1 hide-scrollbar">
+                <form id="taskForm" class="space-y-6">
+                    <input type="hidden" id="taskId">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Judul Tugas</label>
+                        <input type="text" id="taskTitle" required class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all font-bold text-slate-900 text-lg placeholder:font-normal">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Detail Pekerjaan</label>
+                        <textarea id="taskDesc" rows="3" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all resize-none text-sm text-slate-700 font-medium leading-relaxed"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Divisi</label>
+                            <select id="taskDivision" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Kategori</label>
+                            <select id="taskCategory" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer"></select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Prioritas</label>
+                            <select id="taskPriority" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer">
+                                <option value="rendah">Rendah</option>
+                                <option value="sedang" selected>Sedang</option>
+                                <option value="tinggi">Tinggi</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Tenggat</label>
+                            <input type="date" id="taskDueDate" required class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none">
+                        </div>
+                    </div>
+
+                    <div id="editFields" class="hidden space-y-6 border-t border-slate-100 pt-8 mt-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Status Tahapan</label>
+                            <select id="taskStatus" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-bold text-slate-700 outline-none appearance-none cursor-pointer">
+                                <option value="mulai">Mulai</option>
+                                <option value="proses">Proses</option>
+                                <option value="waiting">Waiting</option>
+                                <option value="selesai">Selesai</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100/50">
+                            <label class="block text-xs font-bold text-indigo-600 mb-3 uppercase tracking-widest">Catatan Progres</label>
+                            <input type="text" id="taskUpdateLog" placeholder="Ketik laporan terbaru..." class="w-full px-5 py-3 rounded-xl bg-white border border-indigo-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-medium">
+                        </div>
+
+                        <div id="updateHistoryContainer" class="hidden mt-6">
+                            <label class="block text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2"></i>Riwayat Progres</label>
+                            <div id="updateHistoryList" class="space-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="px-8 py-6 border-t border-slate-100 bg-white flex justify-end space-x-4 shrink-0">
+                <button onclick="app.closeModal()" class="px-7 py-3.5 rounded-2xl font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors outline-none">Batal</button>
+                <button onclick="app.saveTask()" class="px-8 py-3.5 rounded-2xl font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all outline-none active:scale-95">Simpan Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Dialog Modal -->
+    <div id="customDialog" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] hidden items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col transform transition-all scale-100 border border-slate-100">
+            <div class="p-8 text-center">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-6 transform rotate-3">
+                    <i data-lucide="info" class="w-7 h-7 -rotate-3"></i>
+                </div>
+                <h3 id="dialogTitle" class="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Konfirmasi</h3>
+                <p id="dialogMessage" class="text-sm text-slate-500 mb-8 font-medium leading-relaxed"></p>
+                <input type="text" id="dialogInput" class="hidden w-full px-5 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm mb-6 font-bold text-center">
+                <div class="flex justify-center space-x-3">
+                    <button id="dialogBtnCancel" class="hidden flex-1 px-5 py-3.5 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors outline-none">Batal</button>
+                    <button id="dialogBtnConfirm" class="flex-1 px-5 py-3.5 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-md shadow-slate-200 outline-none">OK Mengerti</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var SUPABASE_URL = 'https://ktqgtutzgivxjwtdqcbw.supabase.co';
+        var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0cWd0dXR6Z2l2eGp3dGRxY2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NjU4NjcsImV4cCI6MjA5MDU0MTg2N30.VAg8ZCAb9pxluoU1hg6pqfPPr81N9DNH2qTIkcXgmYM';
+        var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const app = {
+            state: {
+                user: null,
+                userName: '',
+                role: 'user',
+                view: 'list',
+                searchQuery: '',
+                hideDone: false,
+                tasks: [],
+                divisions: [],
+                categories: [],
+                profiles: []
+            },
+            dialogResolve: null,
+
+            async init() {
+                this.cacheDOM();
+                this.bindEvents();
+                await this.checkAuth();
+            },
+
+            cacheDOM() {
+                this.loginScreen = document.getElementById('login-screen');
+                this.mainApp = document.getElementById('main-app');
+                this.viewContainer = document.getElementById('view-container');
+                this.kpiContainer = document.getElementById('kpi-container');
+                this.searchInput = document.getElementById('searchInput');
+                this.searchInputMobile = document.getElementById('searchInputMobile');
+                this.modal = document.getElementById('taskModal');
+                this.pageTitle = document.getElementById('page-title');
+                this.actionButtons = document.getElementById('action-buttons');
+                this.mobileMenu = document.getElementById('mobileMenu');
+                
+                this.fId = document.getElementById('taskId');
+                this.fTitle = document.getElementById('taskTitle');
+                this.fDesc = document.getElementById('taskDesc');
+                this.fDiv = document.getElementById('taskDivision');
+                this.fCat = document.getElementById('taskCategory');
+                this.fPriority = document.getElementById('taskPriority');
+                this.fDue = document.getElementById('taskDueDate');
+                this.fStatus = document.getElementById('taskStatus');
+                this.fUpdateLog = document.getElementById('taskUpdateLog');
+                
+                this.editFields = document.getElementById('editFields');
+                this.historyContainer = document.getElementById('updateHistoryContainer');
+                this.historyList = document.getElementById('updateHistoryList');
+            },
+
+            bindEvents() {
+                const searchHandler = (e) => {
+                    this.state.searchQuery = e.target.value.toLowerCase();
+                    if(e.target.id === 'searchInput') this.searchInputMobile.value = e.target.value;
+                    if(e.target.id === 'searchInputMobile') this.searchInput.value = e.target.value;
+                    this.render();
+                };
+                this.searchInput.addEventListener('input', searchHandler);
+                this.searchInputMobile.addEventListener('input', searchHandler);
+            },
+
+            toggleMobileMenu() {
+                this.mobileMenu.classList.toggle('hidden');
+            },
+
+            showNotification(msg, type = 'success') {
+                const di = document.getElementById('dynamicIsland');
+                const content = document.getElementById('dynamicIslandContent');
+                const text = document.getElementById('dynamicIslandText');
+                const iconContainer = document.getElementById('di-icon');
+
+                text.innerText = msg;
+
+                if (type === 'error') {
+                    iconContainer.className = 'w-6 h-6 rounded-full bg-gradient-to-tr from-rose-400 to-red-600 flex items-center justify-center shadow-inner shrink-0';
+                    iconContainer.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5 text-white"></i>';
+                } else {
+                    iconContainer.className = 'w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center shadow-inner shrink-0';
+                    iconContainer.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>';
+                }
+                lucide.createIcons();
+
+                di.className = `fixed top-6 left-1/2 transform -translate-x-1/2 z-[999] bg-white text-slate-800 rounded-full flex items-center justify-center overflow-hidden island-spring shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 origin-center w-0 h-0 opacity-0`;
+                void di.offsetWidth;
+
+                di.style.width = 'auto';
+                di.style.minWidth = '240px';
+                di.classList.remove('w-0', 'h-0', 'opacity-0');
+                di.classList.add('h-12', 'opacity-100');
+                
+                setTimeout(() => {
+                    content.classList.remove('opacity-0');
+                    content.classList.add('opacity-100');
+                }, 200);
+
+                setTimeout(() => {
+                    content.classList.remove('opacity-100');
+                    content.classList.add('opacity-0');
+                    setTimeout(() => {
+                        di.style.minWidth = '0px';
+                        di.classList.remove('h-12', 'opacity-100');
+                        di.classList.add('w-0', 'h-0', 'opacity-0');
+                    }, 300);
+                }, 3500);
+            },
+
+            showDialog(type, message, defaultValue = '') {
+                return new Promise((resolve) => {
+                    const dialog = document.getElementById('customDialog');
+                    const title = document.getElementById('dialogTitle');
+                    const msg = document.getElementById('dialogMessage');
+                    const input = document.getElementById('dialogInput');
+                    const btnCancel = document.getElementById('dialogBtnCancel');
+                    const btnConfirm = document.getElementById('dialogBtnConfirm');
+
+                    msg.innerText = message;
+                    this.dialogResolve = resolve;
+
+                    input.classList.add('hidden');
+                    btnCancel.classList.add('hidden');
+                    input.value = '';
+
+                    if (type === 'confirm') {
+                        title.innerText = 'Konfirmasi Aksi';
+                        btnCancel.classList.remove('hidden');
+                        btnConfirm.innerText = 'Ya, Lanjutkan';
+                    } else if (type === 'prompt') {
+                        title.innerText = 'Input Data';
+                        input.classList.remove('hidden');
+                        btnCancel.classList.remove('hidden');
+                        btnConfirm.innerText = 'Simpan Perubahan';
+                        input.value = defaultValue;
+                        setTimeout(() => input.focus(), 100);
+                    }
+
+                    dialog.classList.remove('hidden');
+                    dialog.classList.add('flex');
+
+                    btnConfirm.onclick = () => {
+                        this.closeDialog();
+                        if (type === 'prompt') resolve(input.value);
+                        else resolve(true);
+                    };
+
+                    btnCancel.onclick = () => {
+                        this.closeDialog();
+                        if (type === 'prompt') resolve(null);
+                        else resolve(false);
+                    };
+                });
+            },
+
+            closeDialog() {
+                const dialog = document.getElementById('customDialog');
+                dialog.classList.add('hidden');
+                dialog.classList.remove('flex');
+            },
+
+            async showConfirm(msg) {
+                return await this.showDialog('confirm', msg);
+            },
+
+            async showPrompt(msg, defaultVal) {
+                return await this.showDialog('prompt', msg, defaultVal);
+            },
+
+            async checkAuth() {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    this.state.user = session.user;
+                    const kodeIdentitas = session.user.email.split('@')[0];
+                    await this.loadUserProfile(kodeIdentitas);
+                    document.getElementById('userEmailDisplay').innerText = `ID: ${kodeIdentitas}`;
+                    document.getElementById('userNameDisplay').innerText = this.state.userName;
+                    
+                    this.showApp();
+                    await this.fetchData();
+                } else {
+                    this.showLogin();
+                }
+            },
+
+            async loadUserProfile(kodeIdentitas) {
+                const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', this.state.user.id).single();
+                
+                if (profile) {
+                    this.state.role = profile.role;
+                    this.state.userName = profile.name || kodeIdentitas;
+                } else {
+                    const assignedRole = kodeIdentitas === 'admin' ? 'admin' : 'user';
+                    const defaultName = kodeIdentitas === 'admin' ? 'Administrator' : kodeIdentitas;
+                    await supabaseClient.from('profiles').insert([{ id: this.state.user.id, email: kodeIdentitas, name: defaultName, role: assignedRole }]);
+                    this.state.role = assignedRole;
+                    this.state.userName = defaultName;
+                }
+                
+                if (this.state.role === 'admin') {
+                    document.getElementById('nav-settings-desktop').classList.remove('hidden');
+                    document.getElementById('nav-settings-mobile').classList.remove('hidden');
+                }
+            },
+
+            async handleLogin(e) {
+                e.preventDefault();
+                const kodeAkses = document.getElementById('kodeAkses').value.trim().toLowerCase();
+                const password = document.getElementById('password').value;
+                const email = `${kodeAkses}@taskflow.local`;
+                
+                let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                
+                if (error && error.message.includes('Invalid login')) {
+                    if (kodeAkses === 'admin') {
+                        const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+                        if (signUpError) {
+                            this.showNotification(signUpError.message, 'error');
+                            return;
+                        }
+                        data = signUpData;
+                    } else {
+                        this.showNotification('ID Akses atau Password salah.', 'error');
+                        return;
+                    }
+                } else if (error) {
+                    this.showNotification(error.message, 'error');
+                    return;
+                }
+
+                if (data && data.session) {
+                    this.showNotification('Otentikasi berhasil', 'success');
+                    await this.checkAuth();
+                }
+            },
+
+            async handleLogout() {
+                await supabaseClient.auth.signOut();
+                this.state.user = null;
+                document.getElementById('nav-settings-desktop').classList.add('hidden');
+                document.getElementById('nav-settings-mobile').classList.add('hidden');
+                document.getElementById('kodeAkses').value = '';
+                document.getElementById('password').value = '';
+                this.showLogin();
+            },
+
+            showLogin() {
+                this.loginScreen.classList.remove('hidden');
+                this.mainApp.classList.add('hidden');
+            },
+
+            showApp() {
+                this.loginScreen.classList.add('hidden');
+                this.mainApp.classList.remove('hidden');
+            },
+
+            async fetchData() {
+                const [divs, cats, tasksRes, updatesRes] = await Promise.all([
+                    supabaseClient.from('divisions').select('*').order('name'),
+                    supabaseClient.from('categories').select('*').order('name'),
+                    supabaseClient.from('tasks').select('*').order('due_date', { ascending: true }),
+                    supabaseClient.from('task_updates').select('*').order('created_at', { ascending: true })
+                ]);
+
+                this.state.divisions = divs.data || [];
+                this.state.categories = cats.data || [];
+                
+                const updates = updatesRes.data || [];
+                const tasks = tasksRes.data || [];
+                
+                this.state.tasks = tasks.map(t => ({
+                    ...t,
+                    updates: updates.filter(u => u.task_id === t.id).map(u => ({
+                        date: new Date(u.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour:'2-digit', minute:'2-digit'}),
+                        text: u.text
+                    }))
+                }));
+
+                this.populateDropdowns();
+                this.render();
+            },
+
+            populateDropdowns() {
+                this.fDiv.innerHTML = this.state.divisions.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+                this.fCat.innerHTML = this.state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            },
+
+            setView(viewName) {
+                this.state.view = viewName;
+                const navButtons = document.querySelectorAll('[data-nav]');
+                navButtons.forEach(btn => {
+                    if (btn.dataset.nav === viewName) {
+                        btn.classList.add('text-slate-900', 'bg-slate-100');
+                        btn.classList.remove('text-slate-500', 'hover:bg-slate-100/80');
+                    } else {
+                        btn.classList.remove('text-slate-900', 'bg-slate-100');
+                        btn.classList.add('text-slate-500', 'hover:bg-slate-100/80');
+                    }
+                });
+
+                if (viewName === 'settings') {
+                    this.pageTitle.innerText = "Pengaturan Sistem";
+                    this.actionButtons.classList.add('hidden');
+                    this.kpiContainer.classList.add('hidden');
+                } else {
+                    this.pageTitle.innerText = "Tugas Berjalan";
+                    this.actionButtons.classList.remove('hidden');
+                    this.kpiContainer.classList.remove('hidden');
+                }
+                
+                this.render();
+            },
+
+            toggleHideDone(isFiltered) {
+                this.state.hideDone = isFiltered;
+                this.render();
+            },
+
+            getFilteredTasks() {
+                return this.state.tasks.filter(t => {
+                    const matchSearch = (t.title || '').toLowerCase().includes(this.state.searchQuery) ||
+                                        (t.description || '').toLowerCase().includes(this.state.searchQuery) ||
+                                        (t.division || '').toLowerCase().includes(this.state.searchQuery);
+                    const matchVisibility = this.state.hideDone ? t.status !== 'selesai' : true;
+                    return matchSearch && matchVisibility;
+                });
+            },
+
+            getPriorityColor(priority) {
+                const map = { 'tinggi': 'bg-rose-50 text-rose-600 border-rose-100', 'sedang': 'bg-amber-50 text-amber-600 border-amber-100', 'rendah': 'bg-sky-50 text-sky-600 border-sky-100' };
+                return map[priority] || 'bg-slate-50 text-slate-600 border-slate-200';
+            },
+
+            async updateStatus(id, newStatus) {
+                const now = new Date().toISOString();
+                const updateData = { status: newStatus, updated_at: now };
+                if (newStatus === 'selesai') updateData.completed_at = now;
+                else updateData.completed_at = null;
+
+                await supabaseClient.from('tasks').update(updateData).eq('id', id);
+                this.showNotification('Status diperbarui');
+                await this.fetchData();
+            },
+
+            async deleteTask(id) {
+                if(await this.showConfirm('Data yang dihapus tidak dapat dikembalikan. Lanjutkan?')) {
+                    await supabaseClient.from('tasks').delete().eq('id', id);
+                    this.showNotification('Tugas dihapus permanen');
+                    await this.fetchData();
+                }
+            },
+
+            openModal(id = null) {
+                document.getElementById('modalTitle').innerText = id ? 'Edit Data Tugas' : 'Buat Tugas Baru';
+                
+                if(id) {
+                    const task = this.state.tasks.find(t => t.id === id);
+                    this.fId.value = task.id;
+                    this.fTitle.value = task.title;
+                    this.fDesc.value = task.description || '';
+                    this.fDiv.value = task.division;
+                    this.fCat.value = task.category;
+                    this.fPriority.value = task.priority;
+                    this.fDue.value = task.due_date;
+                    this.fStatus.value = task.status;
+                    this.fUpdateLog.value = '';
+                    
+                    this.editFields.classList.remove('hidden');
+                    
+                    if(task.updates && task.updates.length > 0) {
+                        this.historyContainer.classList.remove('hidden');
+                        this.historyList.innerHTML = task.updates.slice().reverse().map(u => `
+                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                                <div class="text-[10px] text-indigo-500 font-extrabold mb-1.5 uppercase tracking-widest">${u.date}</div>
+                                <div class="text-sm text-slate-700 font-semibold leading-relaxed">${u.text}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        this.historyContainer.classList.add('hidden');
+                    }
+                } else {
+                    document.getElementById('taskForm').reset();
+                    this.fId.value = '';
+                    this.fDue.value = new Date().toISOString().split('T')[0];
+                    this.editFields.classList.add('hidden');
+                    this.historyContainer.classList.add('hidden');
+                }
+                
+                this.modal.classList.remove('hidden');
+                this.modal.classList.add('flex');
+                lucide.createIcons();
+            },
+
+            closeModal() {
+                this.modal.classList.add('hidden');
+                this.modal.classList.remove('flex');
+            },
+
+            async saveTask() {
+                if(!this.fTitle.value.trim() || !this.fDue.value) {
+                    this.showNotification('Mohon lengkapi judul dan tenggat waktu', 'error');
+                    return;
+                }
+                const isEditing = !!this.fId.value;
+                const now = new Date().toISOString();
+                
+                const taskData = {
+                    title: this.fTitle.value,
+                    description: this.fDesc.value,
+                    division: this.fDiv.value,
+                    category: this.fCat.value,
+                    priority: this.fPriority.value,
+                    due_date: this.fDue.value,
+                    status: isEditing ? this.fStatus.value : 'mulai',
+                    updated_at: now
+                };
+
+                if(isEditing) {
+                    if (taskData.status === 'selesai') taskData.completed_at = now;
+                    else taskData.completed_at = null;
+                    
+                    await supabaseClient.from('tasks').update(taskData).eq('id', this.fId.value);
+                    
+                    if(this.fUpdateLog.value.trim()) {
+                        await supabaseClient.from('task_updates').insert([{ 
+                            task_id: this.fId.value, text: this.fUpdateLog.value.trim(), created_at: now 
+                        }]);
+                    }
+                    this.showNotification('Perubahan disimpan');
+                } else {
+                    taskData.created_at = now;
+                    taskData.user_id = this.state.user.id;
+                    await supabaseClient.from('tasks').insert([taskData]);
+                    this.showNotification('Tugas baru dibuat');
+                }
+                
+                this.closeModal();
+                await this.fetchData();
+            },
+
+            render() {
+                const tasks = this.getFilteredTasks();
+                const mulai = this.state.tasks.filter(t => t.status === 'mulai').length;
+                const proses = this.state.tasks.filter(t => t.status === 'proses').length;
+                const waiting = this.state.tasks.filter(t => t.status === 'waiting').length;
+                
+                this.kpiContainer.innerHTML = `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0"><i data-lucide="layers" class="w-6 h-6"></i></div>
+                        <div><p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Total Tugas</p><p class="text-2xl font-extrabold text-slate-800 leading-none">${this.state.tasks.length}</p></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0"><i data-lucide="inbox" class="w-6 h-6"></i></div>
+                        <div><p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Antrean</p><p class="text-2xl font-extrabold text-slate-800 leading-none">${mulai}</p></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0"><i data-lucide="loader" class="w-6 h-6"></i></div>
+                        <div><p class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest mb-1">Diproses</p><p class="text-2xl font-extrabold text-indigo-600 leading-none">${proses}</p></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0"><i data-lucide="clock" class="w-6 h-6"></i></div>
+                        <div><p class="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest mb-1">Tertunda</p><p class="text-2xl font-extrabold text-amber-600 leading-none">${waiting}</p></div>
+                    </div>
+                `;
+
+                if(this.state.view === 'list') this.renderList(tasks);
+                else if(this.state.view === 'board') this.renderBoard(tasks);
+                else if(this.state.view === 'timeline') this.renderTimeline(tasks);
+                else if(this.state.view === 'settings') this.renderSettings();
+                
+                lucide.createIcons();
+            },
+
+            renderList(tasks) {
+                if(tasks.length === 0) {
+                    this.viewContainer.innerHTML = `<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 h-80 flex flex-col items-center justify-center text-slate-400"><i data-lucide="layers" class="w-12 h-12 mb-4 text-slate-200"></i><span class="font-bold">Ruang kerja bersih</span></div>`;
+                    return;
+                }
+                let html = `<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden"><div class="divide-y divide-slate-100">`;
+                tasks.forEach(task => {
+                    const isDone = task.status === 'selesai';
+                    html += `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-white hover:bg-slate-50 transition-colors gap-5">
+                        <div class="flex items-start space-x-5 flex-1">
+                            <button onclick="app.updateStatus(${task.id}, '${isDone ? 'mulai' : 'selesai'}')" class="mt-0.5 shrink-0 outline-none">
+                                <i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-6 h-6 ${isDone ? 'text-emerald-500 fill-emerald-50' : 'text-slate-300 hover:text-indigo-500 transition-colors'}"></i>
+                            </button>
+                            <div class="min-w-0 flex-1 cursor-pointer" onclick="app.openModal(${task.id})">
+                                <h4 class="font-extrabold text-base mb-1.5 truncate ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</h4>
+                                <div class="flex flex-wrap items-center gap-2.5 text-xs font-bold text-slate-500">
+                                    <span class="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-600">${task.division}</span>
+                                    <span class="text-slate-300">•</span>
+                                    <span>${task.category}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between sm:justify-end space-x-6 w-full sm:w-auto pl-11 sm:pl-0">
+                            <span class="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
+                            <span class="text-xs font-bold text-slate-400 w-24 text-right"><i data-lucide="calendar" class="w-3.5 h-3.5 inline mr-1.5 mb-0.5"></i>${task.due_date}</span>
+                            <div class="flex space-x-1 shrink-0 border-l border-slate-100 pl-4">
+                                <button onclick="app.deleteTask(${task.id})" class="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors outline-none"><i data-lucide="trash-2" class="w-4.5 h-4.5"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+                this.viewContainer.innerHTML = html;
+            },
+
+            renderBoard(tasks) {
+                const cols = [
+                    { id: 'mulai', title: 'Antrean', color: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400' }, 
+                    { id: 'proses', title: 'Dalam Proses', color: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' },
+                    { id: 'waiting', title: 'Tertunda', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }, 
+                    { id: 'selesai', title: 'Selesai', color: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' }
+                ];
+                let html = `<div class="flex space-x-6 overflow-x-auto pb-4 h-[calc(100vh-220px)] custom-scrollbar items-start">`;
+                cols.forEach(col => {
+                    const colTasks = tasks.filter(t => t.status === col.id);
+                    html += `<div class="min-w-[320px] w-[320px] bg-slate-100/50 rounded-[2rem] p-5 border border-slate-200/50 h-full flex flex-col shrink-0">
+                        <div class="flex justify-between items-center mb-5 px-1">
+                            <h3 class="font-extrabold text-sm text-slate-800 flex items-center"><div class="w-2.5 h-2.5 rounded-full ${col.dot} mr-2.5 shadow-sm"></div>${col.title}</h3>
+                            <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-lg ${col.color}">${colTasks.length}</span>
+                        </div>
+                        <div class="space-y-4 overflow-y-auto flex-1 hide-scrollbar pb-2">`;
+                    colTasks.forEach(task => {
+                        const isDone = task.status === 'selesai';
+                        html += `
+                        <div class="bg-white p-5 rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer" onclick="app.openModal(${task.id})">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
+                                <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">${task.division}</span>
+                            </div>
+                            <h4 class="font-bold text-[15px] leading-snug mb-4 ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</h4>
+                            <div class="flex items-center justify-between pt-3.5 border-t border-slate-50">
+                                <span class="text-[11px] font-bold text-slate-400 flex items-center"><i data-lucide="clock" class="w-3.5 h-3.5 mr-1.5 text-slate-300"></i>${task.due_date}</span>
+                                ${task.updates && task.updates.length > 0 ? `<span class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg flex items-center"><i data-lucide="message-square" class="w-3 h-3 mr-1.5"></i>${task.updates.length}</span>` : ''}
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                });
+                html += `</div>`;
+                this.viewContainer.innerHTML = html;
+            },
+
+            renderTimeline(tasks) {
+                const sorted = [...tasks].sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+                let html = `<div class="max-w-3xl mx-auto w-full"><div class="relative pl-8 border-l-[3px] border-slate-100 space-y-10 py-6">`;
+                
+                if(sorted.length === 0) {
+                    html = `<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 h-80 flex flex-col items-center justify-center text-slate-400"><i data-lucide="clock" class="w-12 h-12 mb-4 text-slate-200"></i><span class="font-bold">Timeline kosong</span></div>`;
+                } else {
+                    sorted.forEach(task => {
+                        const isDone = task.status === 'selesai';
+                        const ringColor = isDone ? 'border-emerald-500 bg-emerald-500' : 'border-indigo-500 bg-white';
+                        
+                        html += `
+                        <div class="relative group">
+                            <div class="absolute -left-[43px] top-6 w-6 h-6 rounded-full border-4 shadow-sm ${ringColor} transition-colors"></div>
+                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 ml-6 hover:shadow-md cursor-pointer transition-all" onclick="app.openModal(${task.id})">
+                                <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+                                    <div class="text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl flex items-center tracking-wide"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-2"></i>${task.due_date}</div>
+                                    <span class="px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
+                                </div>
+                                <h4 class="font-extrabold text-slate-900 text-xl mt-2 mb-3 ${isDone ? 'line-through text-slate-400' : ''}">${task.title}</h4>
+                                <div class="text-xs text-slate-500 font-bold">${task.division} <span class="mx-2 text-slate-300">•</span> <span class="uppercase text-[10px] bg-slate-50 px-2.5 py-1 rounded-lg ml-1">${task.status}</span></div>
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                }
+                this.viewContainer.innerHTML = html;
+            },
+
+            async renderSettings() {
+                const { data: profiles } = await supabaseClient.from('profiles').select('*').order('name');
+                
+                let html = `
+                <div class="flex flex-col gap-6 xl:gap-8 pb-12 max-w-7xl mx-auto">
+                    
+                    <!-- Area Atas: Pendaftaran & Keamanan -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
+                        <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60 flex flex-col h-full">
+                            <h3 class="font-extrabold text-xl mb-3 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="user-plus" class="w-4.5 h-4.5 text-white"></i></div> Pendaftaran Akun</h3>
+                            <p class="text-xs text-slate-500 mb-6 font-medium leading-relaxed">Mendaftarkan akun baru akan mengakhiri sesi Anda saat ini. Pastikan Anda siap masuk kembali.</p>
+                            <div class="flex flex-col gap-4 mt-auto">
+                                <input type="text" id="newKodeInput" placeholder="ID Pengguna" class="w-full px-5 py-3.5 border border-slate-200 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
+                                <input type="text" id="newNamaInput" placeholder="Nama Lengkap" class="w-full px-5 py-3.5 border border-slate-200 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
+                                <input type="password" id="newKodePassword" placeholder="Kata Sandi" class="w-full px-5 py-3.5 border border-slate-200 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
+                                <button onclick="app.createNewUserAccount()" class="w-full bg-slate-900 text-white px-6 py-4 rounded-2xl text-sm font-bold hover:bg-slate-800 transition-colors">Daftarkan Akses</button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-6 xl:gap-8">
+                            <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60">
+                                <h3 class="font-extrabold text-xl mb-6 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="lock" class="w-4.5 h-4.5 text-white"></i></div> Keamanan</h3>
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <input type="password" id="newPasswordInput" placeholder="Kata sandi baru..." class="flex-1 px-5 py-3.5 border border-slate-200 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
+                                    <button onclick="app.changePassword()" class="bg-slate-900 text-white px-7 py-3.5 rounded-2xl text-sm font-bold hover:bg-slate-800 transition-colors whitespace-nowrap">Perbarui</button>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60 flex-1">
+                                <h3 class="font-extrabold text-xl mb-6 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="users" class="w-4.5 h-4.5 text-white"></i></div> Tim Terdaftar</h3>
+                                <div class="space-y-4 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                                    ${profiles.map(p => `
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] shadow-sm">
+                                            <div class="flex flex-col mb-3 sm:mb-0">
+                                                <span class="text-sm font-extrabold text-slate-800 mb-1">${p.name || 'Tanpa Nama'}</span>
+                                                <span class="text-[11px] font-bold text-slate-400 font-mono tracking-wide">ID: ${p.email}</span>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <select onchange="app.updateRole('${p.id}', this.value)" class="text-xs font-bold bg-white border border-slate-200 text-slate-600 rounded-xl px-4 py-2.5 outline-none appearance-none pr-8 relative cursor-pointer" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat, repeat; background-position: right .8em top 50%, 0 0; background-size: .65em auto, 100%;">
+                                                    <option value="user" ${p.role === 'user' ? 'selected' : ''}>Staf</option>
+                                                    <option value="admin" ${p.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                                </select>
+                                                <button onclick="app.deleteUser('${p.id}')" class="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2.5 rounded-xl transition-colors outline-none"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Area Bawah: Tabel Divisi & Kategori -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
+                        <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60 flex flex-col h-full">
+                            <h3 class="font-extrabold text-xl mb-6 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="layers" class="w-4.5 h-4.5 text-white"></i></div> Data Divisi</h3>
+                            <div class="flex space-x-3 mb-6">
+                                <input type="text" id="newDivision" placeholder="Nama divisi baru..." class="flex-1 px-5 py-3.5 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
+                                <button onclick="app.addSimpleItem('divisions', 'newDivision')" class="bg-slate-900 text-white px-5 py-3.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                            </div>
+                            <div class="overflow-x-auto rounded-xl border border-slate-200 flex-1 bg-white">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 border-b border-slate-200">
+                                        <tr>
+                                            <th class="px-5 py-4 font-extrabold text-slate-600">Nama Divisi</th>
+                                            <th class="px-5 py-4 font-extrabold text-slate-600 text-right w-28">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${this.state.divisions.map(d => `
+                                        <tr class="hover:bg-slate-50 transition-colors group">
+                                            <td class="px-5 py-4 font-semibold text-slate-800">${d.name}</td>
+                                            <td class="px-5 py-4 text-right">
+                                                <button onclick="app.editSimpleItem('divisions', ${d.id}, '${d.name}')" class="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button onclick="app.deleteSimpleItem('divisions', ${d.id})" class="text-slate-400 hover:text-red-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </td>
+                                        </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/60 flex flex-col h-full">
+                            <h3 class="font-extrabold text-xl mb-6 flex items-center text-slate-900"><div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center mr-4"><i data-lucide="tag" class="w-4.5 h-4.5 text-white"></i></div> Data Kategori</h3>
+                            <div class="flex space-x-3 mb-6">
+                                <input type="text" id="newCategory" placeholder="Nama kategori baru..." class="flex-1 px-5 py-3.5 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50">
+                                <button onclick="app.addSimpleItem('categories', 'newCategory')" class="bg-slate-900 text-white px-5 py-3.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                            </div>
+                            <div class="overflow-x-auto rounded-xl border border-slate-200 flex-1 bg-white">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 border-b border-slate-200">
+                                        <tr>
+                                            <th class="px-5 py-4 font-extrabold text-slate-600">Nama Kategori</th>
+                                            <th class="px-5 py-4 font-extrabold text-slate-600 text-right w-28">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${this.state.categories.map(c => `
+                                        <tr class="hover:bg-slate-50 transition-colors group">
+                                            <td class="px-5 py-4 font-semibold text-slate-800">${c.name}</td>
+                                            <td class="px-5 py-4 text-right">
+                                                <button onclick="app.editSimpleItem('categories', ${c.id}, '${c.name}')" class="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button onclick="app.deleteSimpleItem('categories', ${c.id})" class="text-slate-400 hover:text-red-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </td>
+                                        </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                this.viewContainer.innerHTML = html;
+                lucide.createIcons();
+            },
+
+            async createNewUserAccount() {
+                const kode = document.getElementById('newKodeInput').value.trim().toLowerCase();
+                const pass = document.getElementById('newKodePassword').value;
+                const nama = document.getElementById('newNamaInput').value.trim();
+
+                if (!kode || !pass || !nama) {
+                    this.showNotification('Harap lengkapi semua kolom pendaftaran.', 'error');
+                    return;
+                }
+
+                const email = `${kode}@taskflow.local`;
+                const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
+
+                if (error) {
+                    this.showNotification('Gagal membuat akses: ' + error.message, 'error');
+                } else {
+                    if (data.user) {
+                        await supabaseClient.from('profiles').insert([{
+                            id: data.user.id,
+                            email: kode,
+                            name: nama,
+                            role: 'user'
+                        }]);
+                    }
+                    this.showNotification('Akses dibuat. Mengakhiri sesi Anda...');
+                    setTimeout(async () => {
+                        await this.handleLogout();
+                    }, 2000);
+                }
+            },
+
+            async changePassword() {
+                const newPassword = document.getElementById('newPasswordInput').value;
+                if(!newPassword) return;
+                
+                const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+                
+                if(error) {
+                    this.showNotification('Gagal memperbarui sandi', 'error');
+                } else {
+                    this.showNotification('Sandi berhasil diperbarui');
+                    document.getElementById('newPasswordInput').value = '';
+                }
+            },
+
+            async updateRole(id, newRole) {
+                await supabaseClient.from('profiles').update({ role: newRole }).eq('id', id);
+                this.showNotification('Hak akses diperbarui');
+            },
+
+            async deleteUser(id) {
+                if(await this.showConfirm('Cabut akses login dan hapus data pengguna secara permanen?')) {
+                    const { error } = await supabaseClient.rpc('delete_user', { user_id: id });
+                    if (error) {
+                        this.showNotification('Gagal mencabut akses', 'error');
+                    } else {
+                        this.showNotification('Akses berhasil dicabut');
+                        await this.fetchData();
+                        this.renderSettings();
+                    }
+                }
+            },
+
+            async addSimpleItem(table, inputId) {
+                const val = document.getElementById(inputId).value.trim();
+                if (!val) return;
+                await supabaseClient.from(table).insert([{ name: val }]);
+                this.showNotification('Data berhasil ditambahkan');
+                await this.fetchData();
+                this.renderSettings();
+            },
+
+            async editSimpleItem(table, id, oldName) {
+                const newName = await this.showPrompt('Ubah penamaan:', oldName);
+                if (newName && newName.trim() !== '' && newName !== oldName) {
+                    await supabaseClient.from(table).update({ name: newName.trim() }).eq('id', id);
+                    this.showNotification('Data diperbarui');
+                    await this.fetchData();
+                    this.renderSettings();
+                }
+            },
+
+            async deleteSimpleItem(table, id) {
+                if(await this.showConfirm('Hapus data klasifikasi ini?')) {
+                    await supabaseClient.from(table).delete().eq('id', id);
+                    this.showNotification('Data dihapus');
+                    await this.fetchData();
+                    this.renderSettings();
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+</html>
