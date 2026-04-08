@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow Pro - Premium UI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fafafa; }
@@ -17,6 +18,15 @@
         .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-down { animation: fadeInDown 0.3s ease-out forwards; }
+        
+        /* Custom Prose Styling for Markdown */
+        .custom-prose p { margin-top: 0.5em; margin-bottom: 0.5em; }
+        .custom-prose ul, .custom-prose ol { margin-top: 0.5em; margin-bottom: 0.5em; padding-left: 1.5em; }
+        .custom-prose li { margin-top: 0.25em; margin-bottom: 0.25em; }
+        .custom-prose table { width: 100%; border-collapse: collapse; margin-top: 1em; margin-bottom: 1em; font-size: 0.875rem; border-radius: 0.5rem; overflow: hidden; }
+        .custom-prose th, .custom-prose td { border: 1px solid #e2e8f0; padding: 0.75em; text-align: left; }
+        .custom-prose th { background-color: #f8fafc; font-weight: 700; color: #475569; }
+        .custom-prose tr:nth-child(even) { background-color: #fcfcfc; }
     </style>
 </head>
 <body class="text-slate-800 flex flex-col h-screen overflow-hidden selection:bg-indigo-100 selection:text-indigo-900">
@@ -197,8 +207,8 @@
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Detail Pekerjaan</label>
-                        <textarea id="taskDesc" rows="3" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all resize-none text-sm text-slate-700 font-medium leading-relaxed"></textarea>
+                        <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Detail Pekerjaan (Gunakan - atau 1. untuk list)</label>
+                        <textarea id="taskDesc" rows="4" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none transition-all resize-none text-sm text-slate-700 font-medium leading-relaxed"></textarea>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -235,8 +245,8 @@
                         </div>
 
                         <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100/50">
-                            <label class="block text-xs font-bold text-indigo-600 mb-3 uppercase tracking-widest">Catatan Progres</label>
-                            <input type="text" id="taskUpdateLog" placeholder="Ketik laporan terbaru..." class="w-full px-5 py-3 rounded-xl bg-white border border-indigo-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-medium">
+                            <label class="block text-xs font-bold text-indigo-600 mb-3 uppercase tracking-widest">Catatan Progres (Gunakan - atau 1. untuk list)</label>
+                            <textarea id="taskUpdateLog" rows="2" placeholder="Ketik laporan terbaru..." class="w-full px-5 py-3 rounded-xl bg-white border border-indigo-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-medium resize-none"></textarea>
                         </div>
 
                         <div id="updateHistoryContainer" class="hidden mt-6">
@@ -262,7 +272,7 @@
                 </div>
                 <h3 id="dialogTitle" class="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Konfirmasi</h3>
                 <p id="dialogMessage" class="text-sm text-slate-500 mb-8 font-medium leading-relaxed"></p>
-                <input type="text" id="dialogInput" class="hidden w-full px-5 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm mb-6 font-bold text-center">
+                <textarea id="dialogInput" rows="3" class="hidden w-full px-5 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm mb-6 font-medium resize-none"></textarea>
                 <div class="flex justify-center space-x-3">
                     <button id="dialogBtnCancel" class="hidden flex-1 px-5 py-3.5 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors outline-none">Batal</button>
                     <button id="dialogBtnConfirm" class="flex-1 px-5 py-3.5 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-md shadow-slate-200 outline-none">OK Mengerti</button>
@@ -338,6 +348,44 @@
                 };
                 this.searchInput.addEventListener('input', searchHandler);
                 this.searchInputMobile.addEventListener('input', searchHandler);
+
+                const handleExcelPaste = (e) => {
+                    const clipboardData = e.clipboardData || window.clipboardData;
+                    if (!clipboardData) return;
+                    const pastedData = clipboardData.getData('Text');
+                    
+                    if (pastedData.includes('\t') && pastedData.includes('\n')) {
+                        const rows = pastedData.trim().split('\n');
+                        const isTable = rows.length > 1 && rows.some(row => row.includes('\t'));
+                        
+                        if (isTable) {
+                            e.preventDefault();
+                            let mdTable = '\n\n';
+                            rows.forEach((row, i) => {
+                                const cols = row.split('\t').map(c => c.trim());
+                                mdTable += '| ' + cols.join(' | ') + ' |\n';
+                                if (i === 0) {
+                                    mdTable += '|' + cols.map(() => '---').join('|') + '|\n';
+                                }
+                            });
+                            mdTable += '\n';
+                            
+                            const target = e.target;
+                            const start = target.selectionStart;
+                            const end = target.selectionEnd;
+                            target.value = target.value.substring(0, start) + mdTable + target.value.substring(end);
+                            target.selectionStart = target.selectionEnd = start + mdTable.length;
+                        }
+                    }
+                };
+
+                const descInput = document.getElementById('taskDesc');
+                const logInput = document.getElementById('taskUpdateLog');
+                const dialogInput = document.getElementById('dialogInput');
+                
+                if (descInput) descInput.addEventListener('paste', handleExcelPaste);
+                if (logInput) logInput.addEventListener('paste', handleExcelPaste);
+                if (dialogInput) dialogInput.addEventListener('paste', handleExcelPaste);
             },
 
             toggleMobileMenu() {
@@ -406,10 +454,10 @@
                         btnCancel.classList.remove('hidden');
                         btnConfirm.innerText = 'Ya, Lanjutkan';
                     } else if (type === 'prompt') {
-                        title.innerText = 'Input Data';
+                        title.innerText = 'Edit Data';
                         input.classList.remove('hidden');
                         btnCancel.classList.remove('hidden');
-                        btnConfirm.innerText = 'Simpan Perubahan';
+                        btnConfirm.innerText = 'Simpan';
                         input.value = defaultValue;
                         setTimeout(() => input.focus(), 100);
                     }
@@ -781,7 +829,7 @@
                             this.historyList.innerHTML = task.updates.slice().reverse().map(u => {
                                 const actionBtns = this.state.role === 'admin' ? `
                                     <div class="flex space-x-3 mt-3 pt-3 border-t border-slate-100">
-                                        <button type="button" onclick="app.editUpdateLog(${u.id}, '${u.text.replace(/'/g, "\\'")}', ${task.id})" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-widest flex items-center outline-none"><i data-lucide="edit-2" class="w-3 h-3 mr-1"></i>Edit</button>
+                                        <button type="button" onclick="app.editUpdateLog(${u.id}, ${task.id})" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-widest flex items-center outline-none"><i data-lucide="edit-2" class="w-3 h-3 mr-1"></i>Edit</button>
                                         <button type="button" onclick="app.deleteUpdateLog(${u.id}, ${task.id})" class="text-[10px] font-bold text-red-600 hover:text-red-800 uppercase tracking-widest flex items-center outline-none"><i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>Hapus</button>
                                     </div>
                                 ` : '';
@@ -792,7 +840,7 @@
                                         <span class="text-[10px] text-indigo-500 font-extrabold uppercase tracking-widest">${u.date}</span>
                                         <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-bold">${u.userName}</span>
                                     </div>
-                                    <div class="text-sm text-slate-700 font-semibold leading-relaxed">${u.text}</div>
+                                    <div class="custom-prose text-sm text-slate-700 font-semibold leading-relaxed">${marked.parse(u.text)}</div>
                                     ${actionBtns}
                                 </div>
                                 `;
@@ -871,22 +919,30 @@
                 await this.fetchData();
             },
 
-            async editUpdateLog(updateId, oldText, taskId) {
-                const newText = await this.showPrompt('Edit catatan progres', oldText);
-                if (newText && newText.trim() !== '' && newText !== oldText) {
+            async editUpdateLog(updateId, taskId) {
+                const task = this.state.tasks.find(t => t.id === taskId);
+                const update = task.updates.find(u => u.id === updateId);
+                if (!update) return;
+
+                const newText = await this.showPrompt('Edit catatan progres', update.text);
+                if (newText && newText.trim() !== '' && newText !== update.text) {
                     await supabaseClient.from('task_updates').update({ text: newText.trim() }).eq('id', updateId);
                     this.showNotification('Catatan progres diperbarui');
                     await this.fetchData();
-                    this.openModal(taskId);
+                    if (!this.modal.classList.contains('hidden')) {
+                        this.openModal(taskId);
+                    }
                 }
             },
 
             async deleteUpdateLog(updateId, taskId) {
-                if(await this.showConfirm('Hapus catatan progres ini')) {
+                if(await this.showConfirm('Hapus catatan progres ini?')) {
                     await supabaseClient.from('task_updates').delete().eq('id', updateId);
                     this.showNotification('Catatan progres dihapus');
                     await this.fetchData();
-                    this.openModal(taskId);
+                    if (!this.modal.classList.contains('hidden')) {
+                        this.openModal(taskId);
+                    }
                 }
             },
 
@@ -979,7 +1035,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 bg-slate-50/80 rounded-2xl border border-slate-200/60">
                                 <div class="md:col-span-5">
                                     <h5 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center"><i data-lucide="align-left" class="w-3.5 h-3.5 mr-2"></i>Detail Pekerjaan</h5>
-                                    <p class="text-sm text-slate-700 font-medium whitespace-pre-wrap leading-relaxed">${task.description || '<span class="italic text-slate-400">Tidak ada deskripsi.</span>'}</p>
+                                    <div class="custom-prose prose prose-sm prose-slate max-w-none text-sm text-slate-700 font-medium leading-relaxed">${task.description ? marked.parse(task.description) : '<span class="italic text-slate-400">Tidak ada deskripsi.</span>'}</div>
                                     
                                     <div class="flex flex-wrap gap-3 mt-6 sm:hidden">
                                         <span class="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
@@ -997,7 +1053,7 @@
                                                         <span class="text-[9px] text-indigo-500 font-extrabold uppercase tracking-widest">${u.date}</span>
                                                         <span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-bold">${u.userName}</span>
                                                     </div>
-                                                    <div class="text-xs text-slate-700 font-bold leading-relaxed">${u.text}</div>
+                                                    <div class="custom-prose prose prose-sm prose-slate max-w-none text-xs text-slate-700 font-bold leading-relaxed">${marked.parse(u.text)}</div>
                                                 </div>
                                             `).join('')}
                                         </div>
@@ -1053,33 +1109,93 @@
             },
 
             renderTimeline(tasks) {
-                const sorted = [...tasks].sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
-                let html = `<div class="max-w-3xl mx-auto w-full"><div class="relative pl-8 border-l-[3px] border-slate-100 space-y-10 py-6">`;
+                const activeTasks = tasks.filter(t => t.status !== 'selesai');
                 
-                if(sorted.length === 0) {
-                    html = `<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 h-80 flex flex-col items-center justify-center text-slate-400"><i data-lucide="clock" class="w-12 h-12 mb-4 text-slate-200"></i><span class="font-bold">Timeline kosong</span></div>`;
-                } else {
-                    sorted.forEach(task => {
-                        const isDone = task.status === 'selesai';
-                        const ringColor = isDone ? 'border-emerald-500 bg-emerald-500' : 'border-indigo-500 bg-white';
-                        const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer hover:shadow-md' : '';
-                        const onclickStr = this.state.role !== 'guest' ? `onclick="app.openModal(${task.id})"` : '';
-                        
-                        html += `
-                        <div class="relative group">
-                            <div class="absolute -left-[43px] top-6 w-6 h-6 rounded-full border-4 shadow-sm ${ringColor} transition-colors"></div>
-                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 ml-6 transition-all ${pointerClass}" ${onclickStr}>
-                                <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
-                                    <div class="text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl flex items-center tracking-wide"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-2"></i>${task.due_date}</div>
-                                    <span class="px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-widest border ${this.getPriorityColor(task.priority)}">${task.priority}</span>
-                                </div>
-                                <h4 class="font-extrabold text-slate-900 text-xl mt-2 mb-3 ${isDone ? 'line-through text-slate-400' : ''}">${task.title}</h4>
-                                <div class="text-xs text-slate-500 font-bold">${task.division} <span class="mx-2 text-slate-300">•</span> <span class="uppercase text-[10px] bg-slate-50 px-2.5 py-1 rounded-lg ml-1">${task.status}</span></div>
-                            </div>
-                        </div>`;
-                    });
-                    html += `</div></div>`;
+                if(activeTasks.length === 0) {
+                    this.viewContainer.innerHTML = `<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 h-80 flex flex-col items-center justify-center text-slate-400"><i data-lucide="clock" class="w-12 h-12 mb-4 text-slate-200"></i><span class="font-bold">Tidak ada tugas berjalan</span></div>`;
+                    return;
                 }
+
+                let minTime = new Date().setHours(0,0,0,0) - (3 * 24 * 60 * 60 * 1000); 
+                let maxTime = new Date().setHours(0,0,0,0) + (14 * 24 * 60 * 60 * 1000); 
+
+                activeTasks.forEach(t => {
+                    const start = new Date(t.created_at || t.due_date).setHours(0,0,0,0);
+                    const end = new Date(t.due_date).setHours(0,0,0,0);
+                    if (start < minTime) minTime = start;
+                    if (end > maxTime) maxTime = end;
+                });
+
+                minTime -= 2 * 24 * 60 * 60 * 1000;
+                maxTime += 2 * 24 * 60 * 60 * 1000;
+
+                const days = [];
+                for (let t = minTime; t <= maxTime; t += 24 * 60 * 60 * 1000) {
+                    days.push(new Date(t));
+                }
+
+                const colWidth = 48;
+
+                let html = `
+                <div class="w-full bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden flex flex-col h-[calc(100vh-220px)] relative">
+                    <div class="overflow-x-auto overflow-y-auto custom-scrollbar flex-1 relative">
+                        <div class="min-w-max inline-block p-6">
+                            <div class="flex border-b border-slate-200 pb-3 mb-3 sticky top-0 bg-white z-20">
+                                <div class="w-72 shrink-0 font-extrabold text-slate-400 text-[10px] uppercase tracking-widest sticky left-0 bg-white z-30 flex items-center shadow-[4px_0_10px_-5px_rgba(0,0,0,0.05)] pl-2">Daftar Tugas Berjalan</div>
+                                <div class="flex relative">
+                                    ${days.map(d => {
+                                        const isToday = d.setHours(0,0,0,0) === new Date().setHours(0,0,0,0);
+                                        return `<div class="w-12 shrink-0 text-center font-bold text-[10px] ${isToday ? 'text-indigo-600 bg-indigo-50 rounded-md py-1' : 'text-slate-400 py-1'}">${d.getDate()}/${d.getMonth()+1}</div>`;
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            ${activeTasks.map(task => {
+                                const tStart = new Date(task.created_at || task.due_date).setHours(0,0,0,0);
+                                const tEnd = new Date(task.due_date).setHours(0,0,0,0);
+                                
+                                let leftIndex = Math.round((tStart - minTime) / (24 * 60 * 60 * 1000));
+                                let duration = Math.round((tEnd - tStart) / (24 * 60 * 60 * 1000)) + 1;
+                                if (leftIndex < 0) leftIndex = 0;
+                                if (duration < 1) duration = 1;
+
+                                const leftPos = leftIndex * colWidth;
+                                const barWidth = duration * colWidth;
+                                
+                                const colorMap = {
+                                    'tinggi': 'bg-rose-500',
+                                    'sedang': 'bg-amber-500',
+                                    'rendah': 'bg-sky-500'
+                                };
+                                const barColor = colorMap[task.priority] || 'bg-slate-500';
+                                const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer' : '';
+                                const onclickStr = this.state.role !== 'guest' ? `onclick="app.openModal(${task.id})"` : '';
+
+                                return `
+                                <div class="flex py-2 border-b border-slate-50 hover:bg-slate-50/50 transition-colors group ${pointerClass}" ${onclickStr}>
+                                    <div class="w-72 shrink-0 pr-6 sticky left-0 bg-white group-hover:bg-slate-50/50 z-10 transition-colors shadow-[4px_0_10px_-5px_rgba(0,0,0,0.05)] flex flex-col justify-center pl-2">
+                                        <p class="font-bold text-sm text-slate-800 truncate" title="${task.title.replace(/"/g, '&quot;')}">${task.title}</p>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 border border-slate-200 px-1.5 py-0.5 rounded">${task.status}</span>
+                                            <span class="text-[10px] font-bold text-slate-400 truncate">${task.division}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex relative rounded-lg overflow-hidden h-12 items-center">
+                                        ${days.map(d => {
+                                            const isToday = d.setHours(0,0,0,0) === new Date().setHours(0,0,0,0);
+                                            return `<div class="w-12 shrink-0 h-full border-r ${isToday ? 'border-indigo-100 bg-indigo-50/20' : 'border-slate-100/50'}"></div>`;
+                                        }).join('')}
+                                        
+                                        <div class="absolute h-7 rounded-md ${barColor} shadow-sm opacity-90 group-hover:opacity-100 transition-opacity flex items-center px-2 min-w-[24px]" style="left: ${leftPos}px; width: ${barWidth}px;">
+                                            <span class="text-[10px] font-bold text-white truncate drop-shadow-sm">${task.title.replace(/"/g, '&quot;')}</span>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+                `;
                 this.viewContainer.innerHTML = html;
             },
 
@@ -1155,7 +1271,7 @@
                                         <tr class="hover:bg-slate-50 transition-colors group">
                                             <td class="px-5 py-4 font-semibold text-slate-800">${d.name}</td>
                                             <td class="px-5 py-4 text-right">
-                                                <button onclick="app.editSimpleItem('divisions', ${d.id}, '${d.name}')" class="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button onclick="app.editSimpleItem('divisions', ${d.id})" class="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                                                 <button onclick="app.deleteSimpleItem('divisions', ${d.id})" class="text-slate-400 hover:text-red-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                                             </td>
                                         </tr>`).join('')}
@@ -1183,7 +1299,7 @@
                                         <tr class="hover:bg-slate-50 transition-colors group">
                                             <td class="px-5 py-4 font-semibold text-slate-800">${c.name}</td>
                                             <td class="px-5 py-4 text-right">
-                                                <button onclick="app.editSimpleItem('categories', ${c.id}, '${c.name}')" class="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button onclick="app.editSimpleItem('categories', ${c.id})" class="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                                                 <button onclick="app.deleteSimpleItem('categories', ${c.id})" class="text-slate-400 hover:text-red-600 p-2 rounded-lg transition-colors outline-none"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                                             </td>
                                         </tr>`).join('')}
@@ -1269,9 +1385,13 @@
                 this.renderSettings();
             },
 
-            async editSimpleItem(table, id, oldName) {
-                const newName = await this.showPrompt('Ubah penamaan:', oldName);
-                if (newName && newName.trim() !== '' && newName !== oldName) {
+            async editSimpleItem(table, id) {
+                const items = table === 'divisions' ? this.state.divisions : this.state.categories;
+                const item = items.find(i => i.id === id);
+                if (!item) return;
+
+                const newName = await this.showPrompt('Ubah penamaan:', item.name);
+                if (newName && newName.trim() !== '' && newName !== item.name) {
                     await supabaseClient.from(table).update({ name: newName.trim() }).eq('id', id);
                     this.showNotification('Data diperbarui');
                     await this.fetchData();
