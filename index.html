@@ -780,15 +780,17 @@ $$;
             },
 
             async fetchData() {
-                const [divs, cats, tasksRes, updatesRes] = await Promise.all([
+                const [divs, cats, tasksRes, updatesRes, profilesRes] = await Promise.all([
                     supabaseClient.from('divisions').select('*').order('name'),
                     supabaseClient.from('categories').select('*').order('name'),
                     supabaseClient.from('tasks').select('*').order('due_date', { ascending: true }),
-                    supabaseClient.from('task_updates').select('*').order('created_at', { ascending: true })
+                    supabaseClient.from('task_updates').select('*').order('created_at', { ascending: true }),
+                    supabaseClient.from('profiles').select('id, role')
                 ]);
 
                 this.state.divisions = divs.data || [];
                 this.state.categories = cats.data || [];
+                this.state.profiles = profilesRes.data || [];
                 
                 const updates = updatesRes.data || [];
                 const tasks = tasksRes.data || [];
@@ -1027,6 +1029,15 @@ $$;
 
             getFilteredTasks() {
                 let filtered = this.state.tasks.filter(t => {
+                    const taskCreator = this.state.profiles.find(p => p.id === t.user_id);
+                    const isTaskByAdmin = taskCreator && taskCreator.role === 'admin';
+                    
+                    if (isTaskByAdmin) {
+                        if (!this.state.user || this.state.user.id !== t.user_id) {
+                            return false;
+                        }
+                    }
+
                     const q = this.state.searchQuery;
                     const subtasksMatch = t.subtasks && t.subtasks.some(st => (st.text || '').toLowerCase().includes(q));
                     const updatesMatch = t.updates && t.updates.some(u => (u.text || '').toLowerCase().includes(q));
