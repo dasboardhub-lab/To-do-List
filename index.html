@@ -436,6 +436,8 @@ $$;
                 sortBy: 'deadline_asc',
                 hideDone: false,
                 currentDetailTaskId: null,
+                timelineMode: 'gantt',
+                calendarDate: new Date(),
                 tasks: [],
                 divisions: [],
                 categories: [],
@@ -863,6 +865,25 @@ $$;
                 }
             },
 
+            toggleFormDivision(name) {
+                if (this.formState.divisions.includes(name)) {
+                    this.formState.divisions = this.formState.divisions.filter(d => d !== name);
+                } else {
+                    this.formState.divisions.push(name);
+                }
+                this.renderFormPills();
+            },
+
+            setFormCategory(name) {
+                this.formState.category = name;
+                this.renderFormPills();
+            },
+
+            setFormPriority(level) {
+                this.formState.priority = level;
+                this.renderFormPills();
+            },
+
             renderSubtaskListModal() {
                 const container = document.getElementById('subtaskList');
                 if (!container) return;
@@ -933,6 +954,17 @@ $$;
             deleteSubtaskModal(id) {
                 this.formState.subtasks = this.formState.subtasks.filter(s => s.id !== id);
                 this.renderSubtaskListModal();
+            },
+
+            setTimelineMode(mode) {
+                this.state.timelineMode = mode;
+                this.render();
+            },
+
+            changeCalendarMonth(offset) {
+                const d = this.state.calendarDate;
+                d.setMonth(d.getMonth() + offset);
+                this.render();
             },
 
             setSortBy(val) {
@@ -1391,9 +1423,9 @@ $$;
                         : `<div class="mt-0.5 shrink-0"><i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-6 h-6 ${isDone ? 'text-emerald-500 fill-emerald-50' : 'text-slate-300'}"></i></div>`;
                     
                     const actionBtns = this.state.role !== 'guest'
-                        ? `<div class="flex items-center space-x-1 shrink-0 border-l border-slate-100 pl-4">
-                                <button onclick="app.openModal(${task.id})" class="flex items-center justify-center p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors outline-none" title="Edit Tugas"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="app.deleteTask(${task.id})" class="flex items-center justify-center p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors outline-none" title="Hapus Tugas"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        ? `<div class="flex items-center gap-1 shrink-0 border-l border-slate-200 pl-2">
+                                <button onclick="app.openModal(${task.id})" class="flex items-center justify-center p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors outline-none" title="Edit Tugas"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="app.deleteTask(${task.id})" class="flex items-center justify-center p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors outline-none" title="Hapus Tugas"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                            </div>`
                         : '';
                     
@@ -1404,7 +1436,7 @@ $$;
                     const stHtml = totalSt > 0 ? `<span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center"><i data-lucide="check-square" class="w-3 h-3 mr-1"></i>${doneSt}/${totalSt}</span>` : '';
 
                     html += `
-                    <div class="flex flex-col bg-white rounded-[2rem] shadow-sm border border-slate-200/60 hover:shadow-md transition-shadow h-full">
+                    <div class="flex flex-col bg-white rounded-[2rem] shadow-sm border border-slate-200/60 hover:shadow-md transition-shadow h-full overflow-hidden">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between p-6 gap-5">
                             <div class="flex items-start space-x-4 flex-1">
                                 ${statusBtn}
@@ -1418,13 +1450,15 @@ $$;
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between sm:justify-end space-x-4 w-full sm:w-auto pl-10 sm:pl-0 mt-2 sm:mt-0">
-                                <span class="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border flex items-center ${this.getPriorityColor(task.priority)} hidden md:inline-block">${task.priority}</span>
-                                <span class="text-xs font-bold text-slate-400 text-right hidden sm:inline-block flex items-center"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 inline"></i>${task.due_date}</span>
-                                <button onclick="app.openDetailModal(${task.id})" class="flex items-center justify-center text-[11px] font-extrabold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition-colors outline-none uppercase tracking-wider">
-                                    Detail <i data-lucide="maximize-2" class="w-4 h-4 ml-1.5"></i>
-                                </button>
-                                ${actionBtns}
+                            <div class="flex flex-wrap items-center justify-end gap-3 w-full sm:w-auto pl-10 sm:pl-0 mt-4 sm:mt-0">
+                                <span class="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border flex items-center shrink-0 ${this.getPriorityColor(task.priority)}">${task.priority}</span>
+                                <span class="text-xs font-bold text-slate-400 text-right flex items-center shrink-0"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 inline"></i>${task.due_date}</span>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button onclick="app.openDetailModal(${task.id})" class="flex items-center justify-center text-[11px] font-extrabold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition-colors outline-none uppercase tracking-wider">
+                                        Detail <i data-lucide="maximize-2" class="w-4 h-4 ml-1.5"></i>
+                                    </button>
+                                    ${actionBtns}
+                                </div>
                             </div>
                         </div>
                     </div>`;
@@ -1481,10 +1515,104 @@ $$;
             },
 
             renderTimeline(tasks) {
+                if (!this.state.timelineMode) this.state.timelineMode = 'gantt';
+                if (!this.state.calendarDate) this.state.calendarDate = new Date();
+
                 const activeTasks = tasks.filter(t => t.status !== 'selesai');
                 
+                let headerHtml = `
+                    <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
+                        <div class="flex items-center space-x-3">
+                            ${this.state.timelineMode === 'calendar' ? `
+                            <button onclick="app.changeCalendarMonth(-1)" class="p-2 rounded-lg bg-white shadow-sm border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            <h3 class="text-sm font-extrabold text-slate-800 w-32 text-center" id="calendarMonthLabel"></h3>
+                            <button onclick="app.changeCalendarMonth(1)" class="p-2 rounded-lg bg-white shadow-sm border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                            ` : `
+                            <h3 class="text-sm font-extrabold text-slate-800 ml-2">Bagan Timeline</h3>
+                            `}
+                        </div>
+                        <div class="flex bg-slate-200/50 p-1 rounded-xl">
+                            <button onclick="app.setTimelineMode('gantt')" class="${this.state.timelineMode === 'gantt' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'} px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center"><i data-lucide="bar-chart-2" class="w-3.5 h-3.5 mr-1.5"></i> Bagan</button>
+                            <button onclick="app.setTimelineMode('calendar')" class="${this.state.timelineMode === 'calendar' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'} px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5"></i> Kalender</button>
+                        </div>
+                    </div>
+                `;
+
+                if (this.state.timelineMode === 'calendar') {
+                    const year = this.state.calendarDate.getFullYear();
+                    const month = this.state.calendarDate.getMonth();
+                    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                    const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                    let gridHtml = `<div class="flex-1 p-4 bg-slate-50 flex flex-col h-full min-h-[400px] overflow-hidden"><div class="grid grid-cols-7 gap-1 flex-1 h-full">`;
+                    
+                    dayNames.forEach(d => {
+                        gridHtml += `<div class="bg-slate-200/50 rounded-lg flex items-center justify-center h-8 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">${d}</div>`;
+                    });
+
+                    for(let i = 0; i < firstDay; i++) {
+                        gridHtml += `<div class="bg-transparent rounded-xl border border-transparent"></div>`;
+                    }
+
+                    for(let day = 1; day <= daysInMonth; day++) {
+                        const dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const dayTasks = activeTasks.filter(t => t.due_date === dateStr);
+                        
+                        const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+                        const dateClass = isToday ? 'bg-indigo-600 text-white' : 'text-slate-600';
+                        const wrapperClass = isToday ? 'border-indigo-200 bg-indigo-50/10' : 'border-slate-200 bg-white hover:border-slate-300 transition-colors';
+
+                        gridHtml += `<div class="rounded-xl border ${wrapperClass} p-2 flex flex-col h-full overflow-hidden">
+                            <div class="w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold mb-2 shrink-0 ${dateClass}">${day}</div>
+                            <div class="flex-1 space-y-1.5 overflow-y-auto custom-scrollbar pr-1">`;
+                        
+                        dayTasks.forEach(t => {
+                            const map = { 'tinggi': 'bg-rose-100 text-rose-700 border-rose-200', 'sedang': 'bg-amber-100 text-amber-700 border-amber-200', 'rendah': 'bg-sky-100 text-sky-700 border-sky-200' };
+                            const bg = map[t.priority] || 'bg-slate-100 text-slate-700';
+                            const pointer = this.state.role !== 'guest' ? 'cursor-pointer' : '';
+                            const onclick = this.state.role !== 'guest' ? `onclick="app.openDetailModal(${t.id})"` : '';
+                            gridHtml += `<div ${onclick} class="text-[9px] font-bold px-1.5 py-1 rounded border truncate ${pointer} hover:shadow-sm transition-all ${bg}" title="${t.title.replace(/"/g, '&quot;')}">${t.title}</div>`;
+                        });
+
+                        gridHtml += `</div></div>`;
+                    }
+
+                    const totalCells = firstDay + daysInMonth;
+                    const remainder = totalCells % 7;
+                    if(remainder !== 0) {
+                        for(let i = 0; i < (7 - remainder); i++) {
+                            gridHtml += `<div class="bg-transparent rounded-xl border border-transparent"></div>`;
+                        }
+                    }
+
+                    gridHtml += `</div></div>`;
+                    
+                    let html = `<div class="w-full bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden flex flex-col h-[calc(100vh-220px)] relative">
+                        ${headerHtml}
+                        ${gridHtml}
+                    </div>`;
+                    
+                    this.viewContainer.innerHTML = html;
+                    
+                    const label = document.getElementById('calendarMonthLabel');
+                    if(label) label.innerText = `${monthNames[month]} ${year}`;
+                    
+                    lucide.createIcons();
+                    return;
+                }
+
                 if(activeTasks.length === 0) {
-                    this.viewContainer.innerHTML = `<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 h-80 flex flex-col items-center justify-center text-slate-400"><i data-lucide="clock" class="w-12 h-12 mb-4 text-slate-200"></i><span class="font-bold">Tidak ada tugas berjalan</span></div>`;
+                    this.viewContainer.innerHTML = `
+                    <div class="w-full bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden flex flex-col h-[calc(100vh-220px)] relative">
+                        ${headerHtml}
+                        <div class="flex-1 flex flex-col items-center justify-center text-slate-400">
+                            <i data-lucide="clock" class="w-12 h-12 mb-4 text-slate-200"></i><span class="font-bold">Tidak ada tugas berjalan</span>
+                        </div>
+                    </div>`;
+                    lucide.createIcons();
                     return;
                 }
 
@@ -1508,8 +1636,7 @@ $$;
 
                 const colWidth = 48;
 
-                let html = `
-                <div class="w-full bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden flex flex-col h-[calc(100vh-220px)] relative">
+                let ganttHtml = `
                     <div class="overflow-x-auto overflow-y-auto custom-scrollbar flex-1 relative">
                         <div class="min-w-max inline-block p-6">
                             <div class="flex border-b border-slate-200 pb-3 mb-3 sticky top-0 bg-white z-20">
@@ -1540,8 +1667,8 @@ $$;
                                     'rendah': 'bg-sky-500'
                                 };
                                 const barColor = colorMap[task.priority] || 'bg-slate-500';
-                                const pointerClass = 'cursor-pointer';
-                                const onclickStr = `onclick="app.openDetailModal(${task.id})"`;
+                                const pointerClass = this.state.role !== 'guest' ? 'cursor-pointer' : '';
+                                const onclickStr = this.state.role !== 'guest' ? `onclick="app.openDetailModal(${task.id})"` : '';
 
                                 return `
                                 <div class="flex py-2 border-b border-slate-50 hover:bg-slate-50/50 transition-colors group ${pointerClass}" ${onclickStr}>
@@ -1566,9 +1693,15 @@ $$;
                             }).join('')}
                         </div>
                     </div>
-                </div>
                 `;
-                this.viewContainer.innerHTML = html;
+
+                let fullHtml = `<div class="w-full bg-white rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden flex flex-col h-[calc(100vh-220px)] relative">
+                    ${headerHtml}
+                    ${ganttHtml}
+                </div>`;
+
+                this.viewContainer.innerHTML = fullHtml;
+                lucide.createIcons();
             },
 
             async renderSettings() {
