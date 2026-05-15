@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buku Dosa - Premium Issue Log</title>
+    <title>Buku Dosa HUB Kalsulamp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -67,6 +67,18 @@
         .table-cards td:first-child { @apply border-l border-slate-100 rounded-l-3xl pl-2; }
         .table-cards td:last-child { @apply border-r border-slate-100 rounded-r-3xl pr-2; }
         .table-cards tr:hover td { @apply bg-white border-brand-200/50 shadow-glass; transform: translateY(-2px); }
+
+        /* Dynamic Island Animations */
+        .island-enter { animation: islandPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .island-exit { animation: islandShrink 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards; }
+        @keyframes islandPop {
+            0% { opacity: 0; transform: scale(0.5) translateY(-20px); border-radius: 50px; }
+            100% { opacity: 1; transform: scale(1) translateY(0); border-radius: 32px; }
+        }
+        @keyframes islandShrink {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.5) translateY(-20px); }
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col relative">
@@ -194,8 +206,8 @@
         </div>
     </main>
 
-    <!-- Toasts -->
-    <div id="toastContainer" class="fixed bottom-8 right-8 flex flex-col gap-3 z-50 pointer-events-none"></div>
+    <!-- Toasts (Dynamic Island) -->
+    <div id="toastContainer" class="fixed top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-[100] pointer-events-none w-full px-4"></div>
 
     <!-- Modals (Ultra Modern) -->
     <div id="modalInput" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 sm:p-6">
@@ -360,11 +372,32 @@
         window.showToast = function(msg, color) {
             const t = document.createElement('div');
             const isBrand = color === 'brand';
-            t.className = `bg-white/90 backdrop-blur-md border border-slate-100 p-4 rounded-2xl shadow-float text-sm font-bold flex items-center gap-3 transition-all transform translate-y-10 opacity-0 min-w-[250px]`;
-            t.innerHTML = `<div class="w-8 h-8 rounded-full ${isBrand?'bg-emerald-50 text-emerald-500':'bg-rose-50 text-rose-500'} flex items-center justify-center"><i class="ph-fill ${isBrand?'ph-check-circle':'ph-warning-circle'} text-xl"></i></div> <span class="text-slate-700">${msg}</span>`;
-            document.getElementById('toastContainer').appendChild(t);
-            setTimeout(() => t.classList.remove('translate-y-10', 'opacity-0'), 10);
-            setTimeout(() => { t.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => t.remove(), 300); }, 3000);
+            
+            // Dynamic Island Styling
+            t.className = `island-enter bg-[#09090b]/90 backdrop-blur-xl border border-white/10 p-1.5 pr-5 rounded-[32px] shadow-2xl flex items-center gap-3 min-w-[200px] max-w-sm overflow-hidden origin-top`;
+            
+            // Icon color glowing logic
+            const dotColor = isBrand ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'bg-rose-400 shadow-[0_0_12px_rgba(251,113,133,0.6)]';
+            const iconColor = isBrand ? 'text-emerald-400' : 'text-rose-400';
+            const iconType = isBrand ? 'ph-check-circle' : 'ph-warning-circle';
+
+            t.innerHTML = `
+                <div class="relative w-9 h-9 bg-white/10 rounded-full flex items-center justify-center shrink-0">
+                    <span class="absolute w-full h-full rounded-full ${dotColor} animate-ping opacity-20"></span>
+                    <i class="ph-fill ${iconType} text-xl ${iconColor} relative z-10"></i>
+                </div>
+                <span class="text-slate-100 text-[13px] font-semibold tracking-wide truncate">${msg}</span>
+            `;
+            
+            const container = document.getElementById('toastContainer');
+            // Insert at the top so newest is always the first Dynamic Island
+            container.insertBefore(t, container.firstChild);
+            
+            setTimeout(() => { 
+                t.classList.remove('island-enter'); 
+                t.classList.add('island-exit'); 
+                setTimeout(() => t.remove(), 400); 
+            }, 3000);
         }
 
         // --- Database Logic ---
